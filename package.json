@@ -1,0 +1,11 @@
+{
+  "name": "articlescraper",
+  "version": "1.0.0",
+  "description": "Scrape multiple web articles",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Aldo",
+  "license": "ISC"
+}
