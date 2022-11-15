@@ -1,7 +1,8 @@
 import mongoose from 'mongoose'
 
-const connect = (url:string ):Promise<typeof mongoose>=>{
-    return connect(url)
+const connectDB = (url:string ):Promise<typeof mongoose>=>{
+    return mongoose.connect(url)
 }
 
-export default connect
+export default connectDB
+ 
