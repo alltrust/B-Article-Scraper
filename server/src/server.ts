@@ -19,8 +19,7 @@ app.get("/", (req, res, next) => {
 app.use('/api/v1/user', userRoutes)
 app.use('/api/v1/articles', articleRoutes)
 
-const mongoUrl = `mongodb+srv://alldough:MbDDejmXduNF6RWU@cluster0.copgrn2.mongodb.net/articles?retryWrites=true&w=majority`;
-// const MONGO_URL = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}`;
+const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
 
 
 const startServer = async () => {
