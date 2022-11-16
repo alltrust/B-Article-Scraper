@@ -21,6 +21,14 @@ const registerUser = async (
       );
       next(error);
     }
+    //check for authorization header to ensure that this user it legitimate via JSON webToken
+    //store this in  a middleware so that the authorization header is sent on every request
+    //send the token via json as well as the rest of the user
+    //store the user in req.user .userId so that you can access it server-side and and then save the user
+
+    //in the model use instance methods to create a new JWT token whenever the user updates their "profile" 
+    //... so that is updates the jwt expiration 
+    //... also create a JWT with every login that is valid
     const user = await User.create(req.body);
 
     res
