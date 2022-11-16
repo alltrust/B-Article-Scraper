@@ -1,12 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { Article } from "../models/Article";
+import RawArticles, { Article, IRawArticles } from "../models/Article";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import cloudscraper from "cloudscraper";
 import { scrapeDataFromUrls, formatUrls } from "./helpers";
+import { StatusCodes } from "http-status-codes";
 
-
-const getRawArticles = async (req: Request, res: Response) => {
-  const { urls } = req.body;
+const scrapeRawArticles = async (urls: string) => {
   const URLS: string[] = formatUrls(urls);
   let articlesContent: Article[] = [];
 
@@ -22,17 +21,16 @@ const getRawArticles = async (req: Request, res: Response) => {
         const { scrapedHeader, scrapedParagraphs } = await scrapeDataFromUrls(
           data
         );
-      
+
         articlesContent[urlIdx].heading += scrapedHeader;
         articlesContent[urlIdx].contentBody.push(scrapedParagraphs);
-      
-        return articlesContent
+
+        return articlesContent;
       })
     );
   } catch (err) {
     const errors = err as Error | AxiosError;
 
-    //perhaps refactor to isaxios error AND response of 403
     if (!axios.isAxiosError(errors)) {
       console.log(errors.message, "FROM ERROER");
     } else {
@@ -57,23 +55,54 @@ const getRawArticles = async (req: Request, res: Response) => {
             const errors = err as AxiosError | Error;
             if (!axios.isAxiosError(errors)) {
               console.log(errors.message);
-              //push an error message into the paragraph or headers section of that index
             } else {
               if (errors.response?.status === 403) {
                 console.log("FORBIDDEN STILL, try accessing via web browser");
-                //push an error message into the paragraph or headers section of that index
               }
             }
           }
-          res.send(articlesContent)
+          return articlesContent;
         }
       }
     }
   }
 };
 
-const postRawArticles = (res: Response) => {
+const createRawArticles = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { urls }= req.body;
+  try {
+    const articleData = await scrapeRawArticles(urls);
+
+
+    if (!articleData) {
+      const error = new Error("There was no article data is scrape");
+      next(error);
+    }else{
+      const rawArticles = new RawArticles() 
+
+      articleData.map((article)=>{
+        rawArticles.articles.push(article)
+      })
+      //EMPTY LIST CHECK- check to see if any are emtpy and then the user can satisfy
+      //or come up with a better plan... 
+      await rawArticles.save()
+    }
+    console.log(articleData)
+
+    // const AllCurrentArticles = await RawArticles.create(articleData) 
+    // console.log(AllCurrentArticles)
+    res.status(StatusCodes.OK).json({ articleData });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const showAllArticles = (res: Response) => {
   res.send({ msg: "post articles controller" });
 };
 
-export { getRawArticles, postRawArticles };
+export { createRawArticles, showAllArticles };

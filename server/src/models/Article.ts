@@ -7,9 +7,9 @@ export interface Article{
 }
 
 export interface IRawArticles {
-  articles: Article | Article[];
+  articles: Article[];
   //   dataFromURLs: string | string[];
-  description: string;
+  // description: string;
   createdBy: { type: Types.ObjectId; ref: "User" };
 }
 
@@ -22,12 +22,12 @@ const ArticleSchema = new Schema<Article>({
 const RawArticlesSchema = new Schema<IRawArticles>(
   {
     articles:{type:[ArticleSchema]},
-    description: {type:String, required: true, minlength: 4},
+    // description: {type:String, required: true, minlength: 4},
     // dataFromURLs: { type: String },
     createdBy: {
       type: Types.ObjectId,
       ref: "User",
-      required: [true, "Please provide user"],
+      // required: [true, "Please provide user"],
     },
   },
   { timestamps: true }
