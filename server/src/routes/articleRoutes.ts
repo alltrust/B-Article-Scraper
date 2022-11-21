@@ -1,10 +1,11 @@
 import express from 'express'
 import { createRawArticles, showAllArticles } from '../controllers/articleController'
+import authMiddleWare from '../middleware/auth'
 
 const router = express.Router()
 
 //post website urls for articles, get all articles json data from urls nd save
-router.route('/').post(createRawArticles).get()
+router.route('/').post(authMiddleWare, createRawArticles).get()
 
 // show all articles that have been scraped before
 router.route('/summary').get()

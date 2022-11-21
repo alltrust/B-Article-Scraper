@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { StatusCodes } from "http-status-codes";
+import { BadErrorRequest } from "../errors";
+import { UserRequest } from "../middleware/auth";
 import User from "../models/User";
 import { IUser } from "../models/User";
 
@@ -11,42 +13,93 @@ const registerUser = async (
   const { username, email, password }: IUser = req.body;
   try {
     if (!username || !email || !password) {
-      const error = new Error("Please dont leave any fields empty");
-      next(error);
+      throw new BadErrorRequest(" Please don't leave any fields empty");
     }
-    const userEmailExists = await User.findOne({ email: email });
-    if (userEmailExists) {
-      const error = new Error(
-        "This user already exists, please create different email"
-      );
-      next(error);
-    }
-    //check for authorization header to ensure that this user it legitimate via JSON webToken
-    //store this in  a middleware so that the authorization header is sent on every request
-    //send the token via json as well as the rest of the user
-    //store the user in req.user .userId so that you can access it server-side and and then save the user
 
-    //in the model use instance methods to create a new JWT token whenever the user updates their "profile" 
-    //... so that is updates the jwt expiration 
-    //... also create a JWT with every login that is valid
     const user = await User.create(req.body);
+    const token = user.createJWT();
 
-    res
-      .status(StatusCodes.CREATED)
-      .json({
-        username: user.username,
-        email: user.email,
-        password: user.password,
-      });
+    res.status(StatusCodes.CREATED).json({
+      username: user.username,
+      email: user.email,
+      token: token,
+    });
   } catch (err) {
     next(err);
   }
 };
-const loginUser = (req: Request, res: Response) => {
-  res.send("hello from updateUser");
+
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { username, email, password }: IUser = req.body;
+  let selectedCredential: "username" | "email";
+  let credential: string;
+  try {
+    if (!username && !email) {
+      throw new BadErrorRequest("Please don't leave any fields empty");
+    }
+    if (username) {
+      credential = username;
+      selectedCredential = "username";
+    } else {
+      credential = email;
+      selectedCredential = "email";
+    }
+
+    const user = await User.findOne({
+      [`${selectedCredential}`]: credential,
+    }).select("+password");
+    if (!user) {
+      throw new BadErrorRequest(
+        `You have not regisetered this ${selectedCredential} yet`
+      );
+    }
+    const passwordIsMatch = await user?.comparePasswords(password);
+    if (!passwordIsMatch) {
+      throw new BadErrorRequest(
+        `The password does not match this ${selectedCredential}`
+      );
+    }
+    if (user && passwordIsMatch) {
+      const token = user?.createJWT();
+      res.status(StatusCodes.OK).json({
+        user: {
+          username: user.username,
+          email: user.email,
+        },
+        token: token,
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
 };
-const updateUser = (req: Request, res: Response) => {
-  res.send("hello from updateUser");
+
+const updateUser = async (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const { email, username }: IUser = req.body;
+
+  if (!email || !username) {
+    throw new BadErrorRequest("Please dont leave fields empty");
+  }
+  try {
+    const user = await User.findOne({ _id: req.user?.userId });
+    if (!user) {
+      throw new Error("This user does not exist in the database");
+    }
+
+    user.email = email;
+    user.username = username;
+
+    const token = user.createJWT();
+    user.save();
+
+    res.status(StatusCodes.OK).json({ user, token });
+  } catch (err) {
+    next(err);
+  }
 };
 
 export { registerUser, loginUser, updateUser };

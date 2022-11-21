@@ -1,28 +1,28 @@
-import { Schema, model, Types } from "mongoose";
+import mongoose, { Schema, model, Types } from "mongoose";
 
-export interface Article{
-  url:string,
-  heading:string,
-  contentBody: string[]
+export interface Article {
+  url: string;
+  heading: string;
+  contentBody: string[];
 }
 
-export interface IRawArticles {
+export interface IRawArticles extends mongoose.Document {
   articles: Article[];
   //   dataFromURLs: string | string[];
-  // description: string;
+  description: string;
   createdBy: { type: Types.ObjectId; ref: "User" };
 }
 
 const ArticleSchema = new Schema<Article>({
-  url:{type:String},
-  heading:{type:String},
-  contentBody:{type:[String]}
-})
+  url: { type: String },
+  heading: { type: String },
+  contentBody: { type: [String] },
+});
 
 const RawArticlesSchema = new Schema<IRawArticles>(
   {
-    articles:{type:[ArticleSchema]},
-    // description: {type:String, required: true, minlength: 4},
+    articles: { type: [ArticleSchema] },
+    description: { type: String, minlength: 4 },
     // dataFromURLs: { type: String },
     createdBy: {
       type: Types.ObjectId,

@@ -1,10 +1,13 @@
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
-export interface IUser {
+export interface IUser extends mongoose.Document {
   username: string;
   email: string;
   password: string;
+  createJWT: () => string;
+  comparePasswords: (candidatePassword: string)=> Promise<boolean>
 }
 
 const UserSchema = new Schema<IUser>({
@@ -12,8 +15,7 @@ const UserSchema = new Schema<IUser>({
     type: String,
     required: [true, "Please provide username"],
     trim: true,
-    minlength: 2,
-    maxlength: 20,
+    unique:true,
   },
   email: {
     type: String,
@@ -23,7 +25,7 @@ const UserSchema = new Schema<IUser>({
   password: {
     type: String,
     required: [true, "Please provide password"],
-    minlength: 4,
+    select: false
   },
 });
 
@@ -32,5 +34,21 @@ UserSchema.pre("save", async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
+
+UserSchema.methods.createJWT = function (): string | undefined {
+  let jwtString: string;
+  if (process.env.JWT_SECRET) {
+    jwtString = jwt.sign({ userId: this._id }, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_LIFETIME,
+    });
+    return jwtString;
+  }
+};
+
+UserSchema.methods.comparePasswords = async function(candidatePassword:string):Promise<boolean>{
+  const isMatch = await bcrypt.compare(candidatePassword, this.password)
+  return isMatch
+
+}
 
 export default model<IUser>("User", UserSchema);
