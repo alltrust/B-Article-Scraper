@@ -1,75 +1,114 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useAppContext } from "../context/appContext";
+import { Alert } from "../components";
 import Wrapper from "../assets/wrappers/registerContainer";
+import { useNavigate } from "react-router-dom";
 
 interface IUser {
   email: string;
   username: string;
   password: string;
+  isMember: boolean;
 }
 
 const initialUserValue: IUser = {
   email: "",
   username: "",
   password: "",
+  isMember: false,
 };
 
 const Register = () => {
-  const { setupUser} = useAppContext();
+  const { user, setupUser, showAlert, clearAlert, displayAlert } =
+    useAppContext();
 
   const [userValue, setUserValue] = useState(initialUserValue);
-  const { email, username, password } = userValue;
+  const { email, username, password, isMember } = userValue;
+  const navigate = useNavigate();
 
   const setUserInput = (e: ChangeEvent<HTMLInputElement>) => {
     setUserValue({ ...userValue, [e.target.name]: e.target.value });
   };
 
+  const toggleIsMember = () => {
+    setUserValue((prevValue) => {
+      return { ...prevValue, isMember: !userValue.isMember };
+    });
+  };
+
   const submitHandler = (event: FormEvent) => {
     event.preventDefault();
-    //showAlert boolean, alerttext, alertType
-    //check if member (and toggle isMember through useState)
-    //put all labels and inputs into component 
+
+    const alertMsgSuccess = {
+      text: "Successful Login...loading your scaper",
+      type: "success",
+    };
+    const alertMsgFail = {
+      text: "Please fill in all fields",
+      type: "danger",
+    };
 
     const userData = {
       email: email,
       username: username,
       password: password,
     };
-    setupUser(userData);
-    
-    //show alert if error and alert if succeeded
+    if (!password) {
+      const text = "don't leave password blank";
+      displayAlert(text, alertMsgFail.type);
+      return clearAlert();
+    }
+    if (isMember && (email || username)) {
+      displayAlert(alertMsgSuccess.text, alertMsgSuccess.type);
+      setupUser(userData, "login");
+    } else if (!isMember && email && username) {
+      displayAlert(alertMsgSuccess.text, alertMsgSuccess.type);
+      setupUser(userData, "register");
+    } else {
+      displayAlert(alertMsgFail.text, alertMsgFail.type);
+    }
 
-    //useNavigate to "/" (scrape) page if succeeded
+    clearAlert();
   };
+  
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   return (
     <Wrapper>
       <form onSubmit={submitHandler} className="form">
-        <h3>Register/Login</h3>
+        <h3>{!isMember ? "Register" : "login"}</h3>
         <div>
-          <div className="label-input-container">
-            <label className="input-label" htmlFor="username">
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              name="username"
-              value={username}
-              onChange={setUserInput}
-            />
-          </div>
-          <div className="label-input-container">
-            <label className="input-label" htmlFor="email">
-              E-mail
-            </label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={email}
-              onChange={setUserInput}
-            />
+          {showAlert && <Alert />}
+          <div className={isMember ? "show-border" : ""}>
+            <div className="label-input-container">
+              <label className="input-label" htmlFor="username">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                name="username"
+                value={username}
+                onChange={setUserInput}
+              />
+            </div>
+            {isMember && <p>OR</p>}
+            <div className="label-input-container">
+              <label className="input-label" htmlFor="email">
+                E-mail
+              </label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={email}
+                onChange={setUserInput}
+              />
+            </div>
           </div>
           <div className="label-input-container">
             <label className="input-label" htmlFor="password">
@@ -84,7 +123,16 @@ const Register = () => {
             />
           </div>
         </div>
-        <button className="btn" type="submit">REGISTER/SIGNIN</button>
+        <button className="btn" type="submit">
+          {!isMember ? "SIGN-UP" : "SIGN-IN"}
+        </button>
+        <div className="register-login-btn-container">
+          {!isMember ? "Already a member?" : "Not a member yet? "}
+          <p onClick={toggleIsMember} className="link">
+            {!isMember ? " Login " : " Register "}
+          </p>
+          here.
+        </div>
       </form>
     </Wrapper>
   );

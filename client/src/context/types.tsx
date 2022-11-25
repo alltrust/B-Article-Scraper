@@ -1,5 +1,4 @@
 import { UserData } from "./Actions";
-import {user, token} from './helpers/persistingState'
 
 interface User {
   username: string;
@@ -11,19 +10,15 @@ export interface AllState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
+  showAlert: boolean;
+  alertText: string;
+  alertType: string;
 }
 
 export interface StateAndFns extends AllState {
-  setupUser: (data: UserData) => Promise<void>;
-  updateUser: ()=> Promise<void>
+  setupUser: (data: UserData, endpoint:string) => Promise<void>;
+  updateUser: () => Promise<void>;
+  displayAlert: (text: string, type: string) => void;
+  clearAlert: () => void;
+  postArticlesFromUrls: (urls:string) => Promise<void>
 }
-// const user = localStorage.getItem("user");
-// const token = localStorage.getItem("token");
-
-const initialContextValue: AllState = {
-  user: user ? JSON.parse(user) : null,
-  token: token,
-  isLoading: false,
-};
-
-export { initialContextValue };

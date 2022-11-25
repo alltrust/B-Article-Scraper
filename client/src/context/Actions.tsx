@@ -1,6 +1,6 @@
 export interface UserData {
-  username: string;
-  email: string;
+  username?: string;
+  email?: string;
   password: string;
 }
 
@@ -9,9 +9,16 @@ export interface UserPayload {
   token: string;
 }
 export interface ActionTypesAndPayload {
-  type: "SETUP_START" | "SETUP_FAIL" | "SETUP_SUCCESS";
+  type:
+    | "SETUP_START"
+    | "SETUP_FAIL"
+    | "SETUP_SUCCESS"
+    | "DISPLAY_ALERT"
+    | "CLEAR_ALERT";
   payload?: {
     user?: UserPayload["user"];
     token?: UserPayload["token"];
+    alertText?: string;
+    alertType?: string;
   };
 }

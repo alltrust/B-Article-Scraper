@@ -1,7 +1,7 @@
 import { ActionTypesAndPayload } from "./Actions";
 import { AllState } from "./types";
 
-const reducer = (state: AllState, action: ActionTypesAndPayload):any => {
+const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
   switch (action.type) {
     case "SETUP_START":
       return { ...state, isLoading: true };
@@ -12,9 +12,18 @@ const reducer = (state: AllState, action: ActionTypesAndPayload):any => {
       if (action.payload) {
         const { user, token } = action.payload;
         return { ...state, isLoading: false, user: user, token: token };
-      }else{
-        break
+      } else {
+        break;
       }
+    case "DISPLAY_ALERT":
+      return {
+        ...state,
+        showAlert: true,
+        alertText: action.payload?.alertText,
+        alertType: action.payload?.alertType,
+      };
+    case "CLEAR_ALERT":
+      return { ...state, showAlert: false, alertText: "", alertType: "" };
     default:
       throw new Error("ERROR FROM REDUCER");
   }
