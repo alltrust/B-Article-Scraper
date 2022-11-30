@@ -5,6 +5,7 @@ import cloudscraper from "cloudscraper";
 import { scrapeDataFromUrls, formatUrls } from "./helpers";
 import { StatusCodes } from "http-status-codes";
 import { UserRequest } from "../middleware/auth";
+import { STATUS_CODES } from "http";
 
 const scrapeRawArticles = async (urls: string) => {
   const URLS: string[] = formatUrls(urls);
@@ -18,6 +19,8 @@ const scrapeRawArticles = async (urls: string) => {
           contentBody: [],
           url: url,
         };
+        //remove all commas
+
 
         const { data }: AxiosResponse = await axios.get(url);
         const { scrapedHeader, scrapedParagraphs } = await scrapeDataFromUrls(
@@ -69,9 +72,6 @@ const scrapeRawArticles = async (urls: string) => {
   return articlesContent;
 };
 
-// rawArticles.createdBy = req.user.userId
-//EMPTY LIST CHECK- check to see if any are emtpy and then the user can satisfy
-//or come up with a better plan...
 
 const createRawArticles = async (
   req: UserRequest,
@@ -81,9 +81,10 @@ const createRawArticles = async (
   const { urls, description } = req.body;
   try {
     if (req.user) {
+      
       const rawArticles = new RawArticles({
         createdBy: req.user.userId,
-        description: description,
+        description: description || "no description provided",
       });
       const articleData = await scrapeRawArticles(urls);
 
@@ -91,21 +92,39 @@ const createRawArticles = async (
         const error = new Error("There was no article data is scrape");
         next(error);
       } else if (articleData && req.user) {
-        articleData.map((article) => {
+        articleData.map(async (article) => {
           rawArticles.articles.push(article);
         });
-      }
+        const rawArticleDoc = await rawArticles.save();
+        const articles = rawArticleDoc.articles
 
-      await rawArticles.save();
-      res.status(StatusCodes.OK).json({ articleData });
+        const articlesWithMissingInfo: Article[] = []
+        articles.map((article)=>{
+          if(article.contentBody.pop() ===  "" || article.heading === ""){
+            articlesWithMissingInfo.push(article)
+          }
+        })
+        res.status(StatusCodes.CREATED).json({ articlesWithMissingInfo });
+
+        //check heading paragraph count and empties, and send back the data for THOSE ones to rescrape
+      }
     }
   } catch (err) {
     next(err);
   }
 };
 
-const showAllArticles = (res: Response) => {
-  res.send({ msg: "post articles controller" });
+const getAllArticles = async(req:UserRequest, res:Response, next:NextFunction) => {
+  try{
+    console.log(req.user?.userId)
+    const articleDoc = await RawArticles.find({createdBy: req.user?.userId})
+    //if no article data is found send error and next it
+    res.status(StatusCodes.OK).json({articleDoc})
+  }catch(err){
+    console.log(err)
+  }
+
+
 };
 
-export { createRawArticles, showAllArticles };
+export { createRawArticles, getAllArticles };

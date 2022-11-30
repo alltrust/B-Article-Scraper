@@ -20,6 +20,7 @@ const scrapeDataFromUrls = async (
       scrapedParagraphs += paragraphs
     }
   });
+ 
   return {scrapedHeader, scrapedParagraphs} 
 };
 

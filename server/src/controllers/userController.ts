@@ -19,9 +19,14 @@ const registerUser = async (
     const user = await User.create(req.body);
     const token = user.createJWT();
 
+  
+
     res.status(StatusCodes.CREATED).json({
-      username: user.username,
-      email: user.email,
+      user:{
+        email: user.email,
+        username: user.username,
+        id: user._id
+      },
       token: token,
     });
   } catch (err) {
