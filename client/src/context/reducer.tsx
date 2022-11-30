@@ -24,6 +24,16 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
       };
     case "CLEAR_ALERT":
       return { ...state, showAlert: false, alertText: "", alertType: "" };
+    case "LOGOUT_USER":
+      return { ...state, user: "", token: "" };
+    case "GET_ARTICLES_SUCCESS":
+      if (action.payload) {
+        const { articleDoc } = action.payload;
+        return { ...state, articleDoc: articleDoc };
+      } else {
+        break;
+      }
+
     default:
       throw new Error("ERROR FROM REDUCER");
   }

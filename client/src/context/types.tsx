@@ -6,6 +6,21 @@ interface User {
   id: string;
 }
 
+export interface ISingleArticle{
+  _id?:string,
+  url:string,
+  heading:string,
+  contentBody:string,
+  children?: React.ReactNode
+}
+
+export interface IArticleDoc{
+  _id?: string,
+  description?:string,
+  createdBy?: string,
+  articles:ISingleArticle[]
+}
+
 export interface AllState {
   user: User | null;
   token: string | null;
@@ -13,6 +28,7 @@ export interface AllState {
   showAlert: boolean;
   alertText: string;
   alertType: string;
+  articleDoc: []
 }
 
 export interface StateAndFns extends AllState {
@@ -20,5 +36,6 @@ export interface StateAndFns extends AllState {
   updateUser: () => Promise<void>;
   displayAlert: (text: string, type: string) => void;
   clearAlert: () => void;
-  postArticlesFromUrls: (urls:string) => Promise<void>
+  postArticlesFromUrls: (urls:string, description:string) => Promise<void>
+  getArticles: ()=> Promise<void>
 }

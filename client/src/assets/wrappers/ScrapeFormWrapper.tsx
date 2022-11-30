@@ -24,6 +24,11 @@ const ScrapeFormWrapper = styled.section`
         min-height: 200px; 
         border: none;
     }
+    .description-input{
+        border:none;
+        padding:5px
+        
+    }
 `
 
 export default ScrapeFormWrapper

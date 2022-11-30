@@ -14,10 +14,13 @@ interface ChildrenProps {
   children: React.ReactNode;
 }
 
+//check for JWT expiration!
+
 const AppContext = createContext({} as StateAndFns);
 
 export const AppProvider = ({ children }: ChildrenProps) => {
   const [value, dispatch] = useReducer(reducer, initialContextValue);
+  // const navigate = useNavigate()
 
   const authFetchInstance = axiosInstance(value.token);
 
@@ -32,7 +35,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     setTimeout(() => {
       dispatch({ type: "CLEAR_ALERT" });
     }, 3000);
-    return
+    return;
   };
 
   const setupUser = async (data: UserData, endpoint: string) => {
@@ -44,21 +47,20 @@ export const AppProvider = ({ children }: ChildrenProps) => {
       );
       const { user, token }: UserPayload = response.data;
 
+      const parsedUser = JSON.stringify(user);
+      addToLocalStorage(parsedUser, token);
+
       dispatch({
         type: "SETUP_SUCCESS",
         payload: { user: user, token: token },
       });
-
-      const parsedUser = JSON.stringify(user);
-      addToLocalStorage(parsedUser, token);
     } catch (err) {
       const error = err as AxiosError | Error;
       if (!axios.isAxiosError(error)) {
-       
-        displayAlert(error.message, "danger")
+        displayAlert(error.message, "danger");
       } else {
         const { message } = error.response?.data;
-        displayAlert(message, "danger")
+        displayAlert(message, "danger");
         // clearAlert()
         // throw new Error(message);
       }
@@ -73,32 +75,66 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     console.log(response);
   };
 
-  const postArticlesFromUrls = async(urls: string)=>{
+  const postArticlesFromUrls = async (urls: string, description: string) => {
     const data = {
-      urls:urls,
-      description: ''
-    }
+      urls: urls,
+      description: description || "",
+    };
     //dispatch starting of requet
 
-    try{
-      const response = await authFetchInstance.post("/articles/",data)
+    try {
+      const response = await authFetchInstance.post("/articles/", data);
       //retrieve response with an articlePayload
-      const {articleData} = response.data
-      console.log(articleData)
-
-    }catch(err){
-      console.log(err)
+      // console.log(response.data)
+      const { articlesWithMissingInfo } = response.data;
+      console.log(articlesWithMissingInfo);
+      // let emptyHeadings: number;
+      // let emptyParagraphs: number ;
+      // articles.map()
+      // once data is recieved, check for empty paragraphs & headings
+      // seperarate the empties and make another request to that url- which then will patch the
+      //article with that pertaining id.
+      //if it remains empty send a message to encourage user to update it manually by accessing the
+      //corresponding website
+    } catch (err) {
+      console.log(err);
+      const error = err as Error | AxiosError;
+      if (!axios.isAxiosError(error)) {
+        displayAlert(error.message, "danger");
+      } else {
+        const { message } = error.response?.data;
+        if (message !== "jwt expired") {
+          displayAlert(message, "danger");
+        }
+        logoutUser();
+        displayAlert("Please login again to continue.", "danger");
+      }
     }
-  }
+  };
+
+  const getArticles = async () => {
+    try {
+      const response = await authFetchInstance.get("/articles/");
+      const { articleDoc } = response.data;
+      console.log(articleDoc);
+      dispatch({
+        type: "GET_ARTICLES_SUCCESS",
+        payload: { articleDoc: articleDoc },
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   const logoutUser = () => {
-    //dispatch
     removeLocalStorage();
+    dispatch({ type: "LOGOUT_USER" });
   };
 
   const allValues: StateAndFns = {
     user: value.user,
     token: value.token,
+    articleDoc: value.articleDoc,
     isLoading: value.isLoading,
     setupUser,
     updateUser,
@@ -107,8 +143,8 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     alertType: value.alertType,
     displayAlert,
     clearAlert,
-    postArticlesFromUrls
-    
+    postArticlesFromUrls,
+    getArticles,
   };
   return (
     <AppContext.Provider value={allValues}>{children}</AppContext.Provider>

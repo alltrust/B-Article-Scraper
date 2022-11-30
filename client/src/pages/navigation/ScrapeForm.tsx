@@ -6,29 +6,28 @@ import { Alert } from "../../components";
 const ScrapeForm = () => {
   const { postArticlesFromUrls, displayAlert, clearAlert, showAlert } =
     useAppContext();
-  // make request to the server with the urls provided in the value of the inputs
 
   const urlsRef = useRef<HTMLTextAreaElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
 
   const submitHandler = (event: FormEvent) => {
     event.preventDefault();
-    // if(urlsRef.current !== null){
     const urlsValue = urlsRef.current?.value;
-    // }
-    //check for urls validity and ensure it is url
+    const descValue = descriptionRef.current?.value
+    
     if (urlsValue?.trim() === "") {
       const alertmsg: string = "Please insert a valid URL";
       displayAlert(alertmsg, 'danger');
       clearAlert()
+      return
     }
-    // if(urlsRef ){
-    if (urlsValue !== undefined && urlsValue !== "") {
-      postArticlesFromUrls(urlsValue);
+    if (urlsValue !== undefined && descValue !== undefined) {
+      let cleanedURLS = urlsValue.replace(/,+/g, "")
+      postArticlesFromUrls(cleanedURLS, descValue);
       console.log(urlsValue);
     }else{
       return
     }
-    // }
     // validate that all the inputs are URLS. (maybe through front and backend with express validator)
   };
   return (
@@ -37,6 +36,8 @@ const ScrapeForm = () => {
       {showAlert && <Alert/>}
       <form onSubmit={submitHandler} className="articles-form">
         <div className="articles-input-container">
+          <label htmlFor="description" className="description-label">Description. Provide a mini description to help you recall today's scrape.</label>
+          <input id="description" name="description" className="description-input" ref={descriptionRef}/>
           <label htmlFor="urls" className="input-label">
             Input all URLs into field. Please seperate links with a space.
           </label>
@@ -45,7 +46,7 @@ const ScrapeForm = () => {
             name="urls"
             className="url-input"
             ref={urlsRef}
-          ></textarea>
+          />
         </div>
         <button className="btn" type="submit">
           Scrape all
