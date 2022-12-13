@@ -1,20 +1,22 @@
 import cheerio from "cheerio";
 
-const scrapeDataFromUrls = async (
+const scrapeDataFromUrls = (
     dataSet: Buffer,
+    pSelector:string, 
+    hSelector:string 
 ) => {
   let scrapedHeader: string= '';
   let scrapedParagraphs: string= '';
 
   let $ = cheerio.load(dataSet, { xmlMode: true });
 
-  $("h1").each((idx: number, el: cheerio.Element) => {
+  $(`${hSelector}`).each((idx: number, el: cheerio.Element) => {
     const headers = $(el).text().trim();
     if (!headers.includes("&nbsp")) {
       scrapedHeader += headers
     }
   });
-  $("article").each((idx: number, el: cheerio.Element) => {
+  $(`${pSelector}`).each((idx: number, el: cheerio.Element) => {
     const paragraphs = $(el).find("p").text().replace(/\s\s+/g, "").trim();
     if (paragraphs !== "") {
       scrapedParagraphs += paragraphs

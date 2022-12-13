@@ -1,3 +1,5 @@
+import { ISingleArticle } from "./types";
+
 export interface UserData {
   username?: string;
   email?: string;
@@ -20,15 +22,20 @@ export interface ActionTypesAndPayload {
     | "DISPLAY_ALERT"
     | "CLEAR_ALERT"
     | "LOGOUT_USER"
-    | "GET_ARTICLES_SUCCESS";
+    | "GET_ALL_ARTICLES_START"
+    | "GET_ARTICLES_SUCCESS"
+    | "SET_MODAL_ARTICLE"
+    | "UPDATE_FAIL";
   payload?: {
     user?: UserPayload["user"];
     token?: UserPayload["token"];
     alertText?: string;
     alertType?: string;
     articleDoc?: [];
+    currentArticles?: [];
+    modalArticle?:ISingleArticle;
     rawArticlesId?: string;
-    articleId?:string
-
+    articleId?: string;
+    msg?: string;
   };
 }

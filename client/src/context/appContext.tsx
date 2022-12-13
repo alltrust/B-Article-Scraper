@@ -4,7 +4,7 @@ import {
   addToLocalStorage,
   removeLocalStorage,
 } from "./helpers/persistingState";
-import { StateAndFns } from "./types";
+import { ISingleArticle, StateAndFns } from "./types";
 import { initialContextValue } from "./initialContextValue";
 import { UserData, UserPayload } from "./Actions";
 import reducer from "./reducer";
@@ -14,13 +14,10 @@ interface ChildrenProps {
   children: React.ReactNode;
 }
 
-//check for JWT expiration!
-
 const AppContext = createContext({} as StateAndFns);
 
 export const AppProvider = ({ children }: ChildrenProps) => {
   const [value, dispatch] = useReducer(reducer, initialContextValue);
-  // const navigate = useNavigate()
 
   const authFetchInstance = axiosInstance(value.token);
 
@@ -39,10 +36,14 @@ export const AppProvider = ({ children }: ChildrenProps) => {
   };
 
   const setupUser = async (data: UserData, endpoint: string) => {
+    const alertMsgSuccess = {
+      text: "Successful Login...loading your scaper",
+      type: "success",
+    };
     dispatch({ type: "SETUP_START" });
     try {
       const response = await axios.post(
-        `http://localhost:8080/api/v1/user/${endpoint}`,
+        `http://localhost:8000/api/v1/user/${endpoint}`,
         data
       );
       const { user, token }: UserPayload = response.data;
@@ -54,8 +55,10 @@ export const AppProvider = ({ children }: ChildrenProps) => {
         type: "SETUP_SUCCESS",
         payload: { user: user, token: token },
       });
+      displayAlert(alertMsgSuccess.text, alertMsgSuccess.type);
     } catch (err) {
       const error = err as AxiosError | Error;
+      dispatch({ type: "SETUP_FAIL" });
       if (!axios.isAxiosError(error)) {
         displayAlert(error.message, "danger");
       } else {
@@ -75,29 +78,27 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     console.log(response);
   };
 
-  const postArticlesFromUrls = async (urls: string, description: string) => {
+  const postArticlesFromUrls = async (urls: string[], description: string) => {
     const data = {
       urls: urls,
       description: description || "",
     };
-    //dispatch starting of requet
+    dispatch({ type: "SETUP_START" });
 
     try {
       const response = await authFetchInstance.post("/articles/", data);
-      //retrieve response with an articlePayload
-      // console.log(response.data)
-      const { articlesWithMissingInfo } = response.data;
-      console.log(articlesWithMissingInfo);
-      // let emptyHeadings: number;
-      // let emptyParagraphs: number ;
-      // articles.map()
-      // once data is recieved, check for empty paragraphs & headings
-      // seperarate the empties and make another request to that url- which then will patch the
-      //article with that pertaining id.
-      //if it remains empty send a message to encourage user to update it manually by accessing the
-      //corresponding website
+      const { message, articles } = response.data;
+
+      dispatch({
+        type: "GET_ARTICLES_SUCCESS",
+        payload: { currentArticles: articles },
+      });
+
+      displayAlert(message, "success");
+      clearAlert();
     } catch (err) {
       console.log(err);
+      dispatch({ type: "SETUP_FAIL" });
       const error = err as Error | AxiosError;
       if (!axios.isAxiosError(error)) {
         displayAlert(error.message, "danger");
@@ -105,25 +106,53 @@ export const AppProvider = ({ children }: ChildrenProps) => {
         const { message } = error.response?.data;
         if (message !== "jwt expired") {
           displayAlert(message, "danger");
+        } else {
+          displayAlert("Please login again to continue.", "danger");
+          logoutUser();
         }
-        logoutUser();
-        displayAlert("Please login again to continue.", "danger");
       }
     }
   };
 
+  const patchArticles = async (updatedArticle: ISingleArticle, docId?:string) => {
+    console.log(updatedArticle);
+    dispatch({type:"SETUP_START"})
+    const data = { updatedArticle };
+    try {
+      const response = await authFetchInstance.patch(
+        `/articles/${docId}`,
+        data
+      );
+      const {message} = response.data;
+      displayAlert(message, "success")
+      getArticles()
+
+    } catch (err) {
+      console.log(err);
+      dispatch({type:"UPDATE_FAIL"})
+    }
+    clearAlert()
+  };
+
   const getArticles = async () => {
+    //set is loading etc...
+    dispatch({ type: "GET_ALL_ARTICLES_START" });
     try {
       const response = await authFetchInstance.get("/articles/");
       const { articleDoc } = response.data;
-      console.log(articleDoc);
+
       dispatch({
         type: "GET_ARTICLES_SUCCESS",
         payload: { articleDoc: articleDoc },
       });
     } catch (err) {
       console.log(err);
+      dispatch({type:"SETUP_FAIL"})
     }
+  };
+
+  const setArticleToModal = (article: ISingleArticle) => {
+    dispatch({ type: "SET_MODAL_ARTICLE", payload: { modalArticle: article } });
   };
 
   const logoutUser = () => {
@@ -136,6 +165,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     token: value.token,
     articleDoc: value.articleDoc,
     isLoading: value.isLoading,
+    patchArticles,
     setupUser,
     updateUser,
     showAlert: value.showAlert,
@@ -145,6 +175,10 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     clearAlert,
     postArticlesFromUrls,
     getArticles,
+    setArticleToModal,
+    logoutUser,
+    modalArticle: value.modalArticle,
+    currentArticles: value.currentArticles,
   };
   return (
     <AppContext.Provider value={allValues}>{children}</AppContext.Provider>

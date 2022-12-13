@@ -3,7 +3,7 @@ import { useAppContext } from "../context/appContext";
 import Wrapper from "../assets/wrappers/navbarcontainer";
 
 const SideNav = () => {
-  const { user } = useAppContext();
+  const { user, logoutUser } = useAppContext();
   const username = user?.username;
 
   const activeClassName = "active";
@@ -40,6 +40,7 @@ const SideNav = () => {
       >
         Profile
       </NavLink>
+      <button onClick={logoutUser}>LOGOUT</button>
     </Wrapper>
   );
 };

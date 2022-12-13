@@ -2,7 +2,7 @@ import axios from "axios";
 
 const axiosInterceptors = (token: string) => {
   const authFetchInstance = axios.create({
-    baseURL: "http://localhost:8080/api/v1",
+    baseURL: "http://localhost:8000/api/v1",
   });
   authFetchInstance.interceptors.request.use(
     function (config) {

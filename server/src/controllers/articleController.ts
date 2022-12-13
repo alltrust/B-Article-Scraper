@@ -2,76 +2,86 @@ import { Request, Response, NextFunction } from "express";
 import RawArticles, { Article, IRawArticles } from "../models/Article";
 import axios, { AxiosError, AxiosResponse } from "axios";
 import cloudscraper from "cloudscraper";
-import { scrapeDataFromUrls, formatUrls } from "./helpers";
+import { scrapeDataFromUrls, siteCheck } from "./helpers";
 import { StatusCodes } from "http-status-codes";
 import { UserRequest } from "../middleware/auth";
-import { STATUS_CODES } from "http";
+import { NotFoundRequest } from "../errors";
 
-const scrapeRawArticles = async (urls: string) => {
-  const URLS: string[] = formatUrls(urls);
+const scrapeRawArticles = async (urls: string[]) => {
+  const URLS = urls;
   let articlesContent: Article[] = [];
 
   try {
-    await Promise.all(
-      URLS.map(async (url: string, urlIdx: number) => {
-        articlesContent[urlIdx] = {
-          heading: "",
-          contentBody: [],
-          url: url,
-        };
-        //remove all commas
-
-
-        const { data }: AxiosResponse = await axios.get(url);
-        const { scrapedHeader, scrapedParagraphs } = await scrapeDataFromUrls(
-          data
-        );
-
-        articlesContent[urlIdx].heading += scrapedHeader;
-        articlesContent[urlIdx].contentBody.push(scrapedParagraphs);
+    const responseArray = await Promise.allSettled(
+      URLS.map(async (url) => {
+        const response = await axios.get(url);
+        return { response, url };
       })
     );
+
+    const rejectedResults = responseArray
+      .filter(
+        <T>(
+          response: PromiseSettledResult<T>
+        ): response is PromiseRejectedResult => response.status === "rejected"
+      )
+      .map((responses) => {
+        const rejectedConfig = responses.reason.config;
+        const rejectedUrl = rejectedConfig.url;
+        return rejectedUrl;
+      });
+
+    const responseArrayOfRejected = await Promise.allSettled(
+      rejectedResults.map(async (url) => {
+        const response = await cloudscraper(url);
+        return { response, url };
+      })
+    );
+
+    const fullResponseArray = responseArray.concat(responseArrayOfRejected);
+    //check any rejected as well and send info back
+
+    const fulfilledResults = fullResponseArray
+      .filter(
+        <T>(
+          response: PromiseSettledResult<T>
+        ): response is PromiseFulfilledResult<T> => {
+          return response.status === "fulfilled";
+        }
+      )
+      .map((successfulResponse) => {
+        let data = successfulResponse.value.response.data;
+        if (!data) {
+          data = successfulResponse.value.response;
+        }
+        const { articleParagraphsSelector, articleHeadingSelector } = siteCheck(
+          successfulResponse.value.url
+        );
+        const { scrapedHeader, scrapedParagraphs } = scrapeDataFromUrls(
+          data,
+          articleParagraphsSelector,
+          articleHeadingSelector
+        );
+        return {
+          url: successfulResponse.value.url,
+          heading: scrapedHeader,
+          contentBody: [scrapedParagraphs],
+        };
+      });
+
+    articlesContent = fulfilledResults;
+    return articlesContent;
   } catch (err) {
     const errors = err as Error | AxiosError;
+    console.log(errors);
 
     if (!axios.isAxiosError(errors)) {
-      console.log(errors.message, "FROM ERROER");
+      throw new Error(errors.message);
     } else {
-      if (errors.response?.status === 403) {
-        const blockedURL = errors.response?.config.url;
-        console.log(blockedURL);
-        if (blockedURL) {
-          try {
-            const finalUrlAttmept = await cloudscraper(blockedURL);
-            const blockedURLIndex = articlesContent.findIndex(
-              (scrapedData: any) => scrapedData.url === blockedURL
-            );
-            if (blockedURLIndex !== -1) {
-              const { scrapedHeader, scrapedParagraphs } =
-                await scrapeDataFromUrls(finalUrlAttmept);
-
-              articlesContent[blockedURLIndex].heading += scrapedHeader;
-              articlesContent[blockedURLIndex].contentBody.push(
-                scrapedParagraphs
-              );
-            }
-          } catch (err) {
-            const errors = err as AxiosError | Error;
-            if (!axios.isAxiosError(errors)) {
-              console.log(errors.message);
-            } else {
-              if (errors.response?.status === 403) {
-                console.log("FORBIDDEN STILL, try accessing via web browser");
-              }
-            }
-          }
-        }
-      }
+      throw new Error(errors.message);
     }
   }
-  return articlesContent;
 };
-
 
 const createRawArticles = async (
   req: UserRequest,
@@ -81,7 +91,6 @@ const createRawArticles = async (
   const { urls, description } = req.body;
   try {
     if (req.user) {
-      
       const rawArticles = new RawArticles({
         createdBy: req.user.userId,
         description: description || "no description provided",
@@ -96,17 +105,12 @@ const createRawArticles = async (
           rawArticles.articles.push(article);
         });
         const rawArticleDoc = await rawArticles.save();
-        const articles = rawArticleDoc.articles
+        const articles = rawArticleDoc.articles;
 
-        const articlesWithMissingInfo: Article[] = []
-        articles.map((article)=>{
-          if(article.contentBody.pop() ===  "" || article.heading === ""){
-            articlesWithMissingInfo.push(article)
-          }
-        })
-        res.status(StatusCodes.CREATED).json({ articlesWithMissingInfo });
-
-        //check heading paragraph count and empties, and send back the data for THOSE ones to rescrape
+        res.status(StatusCodes.CREATED).json({
+          message: "Article have been successfully scraped!",
+          articles: articles,
+        });
       }
     }
   } catch (err) {
@@ -114,17 +118,51 @@ const createRawArticles = async (
   }
 };
 
-const getAllArticles = async(req:UserRequest, res:Response, next:NextFunction) => {
-  try{
-    console.log(req.user?.userId)
-    const articleDoc = await RawArticles.find({createdBy: req.user?.userId})
+const getAllArticles = async (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    console.log(req.user?.userId);
+    const articleDoc = await RawArticles.find({ createdBy: req.user?.userId });
+
     //if no article data is found send error and next it
-    res.status(StatusCodes.OK).json({articleDoc})
-  }catch(err){
-    console.log(err)
+    res.status(StatusCodes.OK).json({ articleDoc });
+  } catch (err) {
+    next(err);
   }
-
-
 };
 
-export { createRawArticles, getAllArticles };
+const patchArticle = async (
+  req: UserRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const { articleDocId } = req.params;
+  const { updatedArticle } = req.body;
+  try{
+    //do this with $ moongoose aggregate
+    const articleParentDoc = await RawArticles.findOne({ _id: articleDocId });
+  
+    const docArticles = articleParentDoc?.articles;
+    const indexOfArticle = docArticles?.findIndex((article) => {
+      return article._id?.toString() === updatedArticle._id;
+    });
+  
+    if(indexOfArticle !== -1 && indexOfArticle !== undefined && docArticles){
+      docArticles[indexOfArticle].heading = updatedArticle.heading;
+      docArticles[indexOfArticle].contentBody = updatedArticle.contentBody;
+      articleParentDoc?.save()
+    }else{
+      throw new NotFoundRequest('Article you want to update does not exist.')
+    }
+    res.status(StatusCodes.OK).send({message: "Successfully updated your post."})
+  }catch(err){
+    next(err)
+  }
+
+  
+};
+
+export { createRawArticles, getAllArticles, patchArticle };

@@ -5,7 +5,6 @@ const ScrapeFormWrapper = styled.section`
     display: flex;
     flex-direction: column;
     justify-content: space-around;
-    align-items: s ;
 
     .articles-form{
        

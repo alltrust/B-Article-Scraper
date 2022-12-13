@@ -39,10 +39,6 @@ const Register = () => {
   const submitHandler = (event: FormEvent) => {
     event.preventDefault();
 
-    const alertMsgSuccess = {
-      text: "Successful Login...loading your scaper",
-      type: "success",
-    };
     const alertMsgFail = {
       text: "Please fill in all fields",
       type: "danger",
@@ -59,10 +55,8 @@ const Register = () => {
       return clearAlert();
     }
     if (isMember && (email || username)) {
-      displayAlert(alertMsgSuccess.text, alertMsgSuccess.type);
       setupUser(userData, "login");
     } else if (!isMember && email && username) {
-      displayAlert(alertMsgSuccess.text, alertMsgSuccess.type);
       setupUser(userData, "register");
     } else {
       displayAlert(alertMsgFail.text, alertMsgFail.type);
@@ -70,7 +64,7 @@ const Register = () => {
 
     clearAlert();
   };
-  
+
   useEffect(() => {
     if (user) {
       navigate("/");

@@ -1,4 +1,4 @@
-import React from "react";
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Error, Register } from "./pages/index";
 import {
@@ -10,6 +10,7 @@ import {
 import ProtectedRoutes from "./pages/navigation/ProtectedRoutes";
 
 function App() {
+  
   return (
     <BrowserRouter>
       <Routes>

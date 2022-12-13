@@ -26,13 +26,28 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
       return { ...state, showAlert: false, alertText: "", alertType: "" };
     case "LOGOUT_USER":
       return { ...state, user: "", token: "" };
+    case "GET_ALL_ARTICLES_START":
+      return { ...state, isLoading: true };
     case "GET_ARTICLES_SUCCESS":
       if (action.payload) {
-        const { articleDoc } = action.payload;
-        return { ...state, articleDoc: articleDoc };
+        const { articleDoc, currentArticles } = action.payload;
+        if (currentArticles) {
+          return {
+            ...state,
+            currentArticles: currentArticles,
+            isLoading: false,
+          };
+        } else {
+          return { ...state, articleDoc: articleDoc, isLoading: false };
+        }
       } else {
         break;
       }
+      case "UPDATE_FAIL":
+        return {...state, isLoading:false}
+    case "SET_MODAL_ARTICLE":
+        return { ...state, modalArticle: action.payload?.modalArticle };
+   
 
     default:
       throw new Error("ERROR FROM REDUCER");

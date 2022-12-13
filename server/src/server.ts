@@ -12,7 +12,7 @@ import errorHandlerMiddleware from "./middleware/error-handler";
 import notFoundMiddlware from "./middleware/not-found";
 
 const app = express();
-const port: number | string = process.env.PORT || 8080;
+const port: number | string = process.env.PORT || 8000;
 
 app.use(cors());
 app.use(express.json());

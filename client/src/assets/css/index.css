@@ -5,7 +5,7 @@
 }
 
 /* fonts */
-@import url('https://fonts.googleapis.com/css2?family=Cabin&family=Roboto+Condensed:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Cabin&family=Roboto+Condensed:wght@400;700&display=swap");
 
 html {
   font-size: 100%;
@@ -44,8 +44,8 @@ html {
   --green-dark: #0f5132;
 
   /* fonts  */
-  --headingFont: 'Roboto Condensed', Sans-Serif;
-  --bodyFont: 'Cabin', Sans-Serif;
+  --headingFont: "Roboto Condensed", Sans-Serif;
+  --bodyFont: "Cabin", Sans-Serif;
   --small-text: 0.875rem;
   --extra-small-text: 0.7em;
   /* rest of the vars */
@@ -53,7 +53,7 @@ html {
   --textColor: var(--grey-900);
   --borderRadius: 0.25rem;
   --letterSpacing: 1px;
-  --transition: 0.3s ease-in-out all;
+  --transition: all 0.5s ease-out;
   --max-width: 1120px;
   --fixed-width: 500px;
   --fluid-width: 90vw;
@@ -257,28 +257,26 @@ ul {
 }
 /* alert */
 
-.register-login-btn-container{
+.register-login-btn-container {
   display: flex;
   align-items: baseline;
-  
 }
 
-.link{
-  border:none;
+.link {
+  border: none;
   background-color: transparent;
   text-decoration: underline;
-  color:blue;
+  color: blue;
   cursor: pointer;
   margin-left: 5px;
   margin-right: 5px;
 }
 
-.show-border{
+.show-border {
   border: 1px solid grey;
   padding: 20px;
   border-radius: 20px;
 }
-
 
 @keyframes spinner {
   to {
@@ -341,4 +339,14 @@ ul {
     display: inline-block;
     margin-right: 0.5rem;
   }
+}
+
+.overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 100%;
+  overflow-y: hidden;
+  background-color: rgba(0, 0, 0, 0.3);
 }

@@ -16,16 +16,19 @@ const registerUser = async (
       throw new BadErrorRequest(" Please don't leave any fields empty");
     }
 
+    const existingUser = await User.findOne({email:email});
+    if(existingUser){
+      throw new BadErrorRequest("This user already exists, please login")
+    }
     const user = await User.create(req.body);
     const token = user.createJWT();
-
-  
+    console.log(user);
 
     res.status(StatusCodes.CREATED).json({
-      user:{
+      user: {
         email: user.email,
         username: user.username,
-        id: user._id
+        id: user._id,
       },
       token: token,
     });
@@ -70,6 +73,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
         user: {
           username: user.username,
           email: user.email,
+          id: user._id,
         },
         token: token,
       });
