@@ -1,10 +1,5 @@
-// check for requests and incoming authorization headers.
-//match it to the JWT that the user carries
-// and then save the userId to the req.user which comes from the "payload"
-//which you pass in via the createdJWT
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { NextFunction, Request, Response } from "express";
-import { IUser } from "../models/User";
 import mongoose from "mongoose";
 import { UnauthErrorRequest } from "../errors";
 
