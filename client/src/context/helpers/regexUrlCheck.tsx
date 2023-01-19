@@ -1,9 +1,10 @@
 const formatUrlsToArray = (urls: string) => {
-  let cleanedURLS = urls.replace(/,+/g, "");
-  const formattedURLS = cleanedURLS.replace(/\s+/g, ",").trim();
-  const allUrls: string[] = formattedURLS.split(",");
-  allUrls.map((string: string) => (string === "" ? allUrls.pop() : allUrls));
-  return allUrls;
+  const URLSWithoutCommas = urls.replace(/,+/g, "");
+  const URLSWithoutWhiteSpace = URLSWithoutCommas.replace(/\s+/g, ",").trim();
+  const allUrls: string[] = URLSWithoutWhiteSpace.split(",");
+
+  const nonBlankUrls = allUrls.filter((UrlString: string) => UrlString !== "");
+  return nonBlankUrls;
 };
 
 const regexUrlCheck = (urls: string) => {

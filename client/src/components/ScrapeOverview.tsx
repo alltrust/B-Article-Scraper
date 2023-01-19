@@ -7,20 +7,21 @@ const ScrapeOverview = () => {
   const { currentArticles } = useAppContext();
   const numOfScrapedUrls = currentArticles.length;
 
+
   const successfulScrapes = currentArticles.filter((article) => {
-    return article.heading !== "" && article.contentBody[0] !== "";
+    return article.heading !== "" && article.contentBody.length > 1;
   });
 
   const successfulButMissingHeaders = currentArticles.filter((article) => {
-    return article.heading === "" && article.contentBody[0] !== "";
+    return article.heading === "" && article.contentBody.length > 1;
   });
 
   const successfulButMissingContent = currentArticles.filter((article) => {
-    return article.contentBody[0] === "" && article.heading !== "";
+    return article.contentBody.length <= 1 && article.heading !== "";
   });
 
   const unsuccessfulScrapes = currentArticles.filter((article) => {
-    return article.heading === "" && article.contentBody[0] === "";
+    return article.heading === "" && article.contentBody.length <= 1;
   });
 
 

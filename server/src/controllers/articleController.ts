@@ -1,19 +1,24 @@
 import { Request, Response, NextFunction } from "express";
-import RawArticles, { Article, IRawArticles } from "../models/Article";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import RawArticles, { Article } from "../models/Article";
+import axios, { AxiosError } from "axios";
 import cloudscraper from "cloudscraper";
-import { scrapeDataFromUrls, siteCheck } from "./helpers";
+import {
+  scrapeDataFromUrls,
+  siteCheck,
+  configureScrapedContent,
+  tickerAndCoNameFilter,
+} from "./helpers";
 import { StatusCodes } from "http-status-codes";
 import { UserRequest } from "../middleware/auth";
-import { NotFoundRequest } from "../errors";
+import { BadErrorRequest, NotFoundRequest } from "../errors";
+import { Types } from "mongoose";
 
 const scrapeRawArticles = async (urls: string[]) => {
-  const URLS = urls;
   let articlesContent: Article[] = [];
 
   try {
     const responseArray = await Promise.allSettled(
-      URLS.map(async (url) => {
+      urls.map(async (url) => {
         const response = await axios.get(url);
         return { response, url };
       })
@@ -57,7 +62,13 @@ const scrapeRawArticles = async (urls: string[]) => {
         const { articleParagraphsSelector, articleHeadingSelector } = siteCheck(
           successfulResponse.value.url
         );
-        const { scrapedHeader, scrapedParagraphs } = scrapeDataFromUrls(
+        //insert scraped ticker and scraped co. name
+        const {
+          scrapedHeader,
+          scrapedParagraphs,
+          scrapedCoName,
+          scrapedTicker,
+        } = scrapeDataFromUrls(
           data,
           articleParagraphsSelector,
           articleHeadingSelector
@@ -65,7 +76,9 @@ const scrapeRawArticles = async (urls: string[]) => {
         return {
           url: successfulResponse.value.url,
           heading: scrapedHeader,
-          contentBody: [scrapedParagraphs],
+          companyName: scrapedCoName,
+          ticker: scrapedTicker,
+          contentBody: scrapedParagraphs,
         };
       });
 
@@ -75,11 +88,7 @@ const scrapeRawArticles = async (urls: string[]) => {
     const errors = err as Error | AxiosError;
     console.log(errors);
 
-    if (!axios.isAxiosError(errors)) {
-      throw new Error(errors.message);
-    } else {
-      throw new Error(errors.message);
-    }
+    throw new Error(errors.message);
   }
 };
 
@@ -92,7 +101,7 @@ const createRawArticles = async (
   try {
     if (req.user) {
       const rawArticles = new RawArticles({
-        createdBy: req.user.userId,
+        createdBy: req.user?.userId,
         description: description || "no description provided",
       });
       const articleData = await scrapeRawArticles(urls);
@@ -105,11 +114,10 @@ const createRawArticles = async (
           rawArticles.articles.push(article);
         });
         const rawArticleDoc = await rawArticles.save();
-        const articles = rawArticleDoc.articles;
 
         res.status(StatusCodes.CREATED).json({
           message: "Article have been successfully scraped!",
-          articles: articles,
+          articles: rawArticleDoc,
         });
       }
     }
@@ -124,7 +132,6 @@ const getAllArticles = async (
   next: NextFunction
 ) => {
   try {
-    console.log(req.user?.userId);
     const articleDoc = await RawArticles.find({ createdBy: req.user?.userId });
 
     //if no article data is found send error and next it
@@ -141,28 +148,131 @@ const patchArticle = async (
 ) => {
   const { articleDocId } = req.params;
   const { updatedArticle } = req.body;
-  try{
+  //check if the updated articles heading and content are empty... then throw an error
+  // do this in the front end!
+  let editedParagraphs: Article["contentBody"] = [
+    {
+      section: "",
+      isSelected: false,
+    },
+  ];
+  let coName;
+  let ticker;
+
+  const hasContentBody: boolean = updatedArticle.contentBody ? true : false;
+
+  if (hasContentBody) {
+    const updatedArticleContent = updatedArticle.contentBody[0];
+    const configuredContent = configureScrapedContent(updatedArticleContent);
+
+    const firstSentence = configuredContent[0];
+    const { scrapedCoName, scrapedTicker } =
+      tickerAndCoNameFilter(firstSentence);
+
+    ticker = scrapedTicker;
+    coName = scrapedCoName;
+
+    editedParagraphs.pop();
+    for (const content of configuredContent) {
+      editedParagraphs.push({ section: content, isSelected: false });
+    }
+  }
+
+  try {
     //do this with $ moongoose aggregate
     const articleParentDoc = await RawArticles.findOne({ _id: articleDocId });
-  
+
     const docArticles = articleParentDoc?.articles;
     const indexOfArticle = docArticles?.findIndex((article) => {
       return article._id?.toString() === updatedArticle._id;
     });
-  
-    if(indexOfArticle !== -1 && indexOfArticle !== undefined && docArticles){
-      docArticles[indexOfArticle].heading = updatedArticle.heading;
-      docArticles[indexOfArticle].contentBody = updatedArticle.contentBody;
-      articleParentDoc?.save()
-    }else{
-      throw new NotFoundRequest('Article you want to update does not exist.')
-    }
-    res.status(StatusCodes.OK).send({message: "Successfully updated your post."})
-  }catch(err){
-    next(err)
-  }
 
-  
+    if (indexOfArticle !== -1 && indexOfArticle !== undefined && docArticles) {
+      docArticles[indexOfArticle].heading = updatedArticle.heading;
+
+      if (hasContentBody) {
+        docArticles[indexOfArticle].contentBody = editedParagraphs || "";
+      }
+
+      docArticles[indexOfArticle].companyName =
+        updatedArticle.companyName !== ""
+          ? updatedArticle.companyName
+          : coName || "";
+
+      docArticles[indexOfArticle].ticker =
+        updatedArticle.ticker !== "" ? updatedArticle.ticker : ticker || "";
+
+      articleParentDoc?.save();
+    } else {
+      throw new NotFoundRequest("Article you want to update does not exist.");
+    }
+    res.status(StatusCodes.OK).send({
+      message: "Successfully updated your post.",
+      articles: articleParentDoc.articles,
+    });
+  } catch (err) {
+    next(err);
+  }
 };
 
-export { createRawArticles, getAllArticles, patchArticle };
+const deleteArticleDocOrArticle = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { articleId, articleDocId } = req.params;
+  let message: string;
+  try {
+    if (!articleId) {
+      await RawArticles.deleteOne({ _id: articleDocId });
+      message = "Successfully deleted your entire document";
+    } else {
+      await RawArticles.findOneAndUpdate(
+        { _id: articleDocId },
+        { $pull: { articles: { _id: new Types.ObjectId(articleId) } } },
+        { new: true }
+      );
+      message = "Successfully deleted your article";
+    }
+    res.status(StatusCodes.OK).json({ message: message });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const selectSentence = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { articleDocId, articleId, sentenceId } = req.params;
+  console.log(sentenceId)
+  try {
+    const articleDoc = await RawArticles.findOne({_id:articleDocId})
+    if(!articleDoc){
+      throw new NotFoundRequest("Document not founc")
+    }
+    const articleIdx = articleDoc.articles.findIndex(article=> article._id?.toString() === articleId);
+    const article = articleDoc.articles[articleIdx];
+
+    const sentenceIdx = article.contentBody.findIndex(content=> content._id?.toString()=== sentenceId)
+
+    const sentenceIsSelected = article.contentBody[sentenceIdx].isSelected
+    articleDoc.articles[articleIdx].contentBody[sentenceIdx].isSelected = !sentenceIsSelected
+
+    articleDoc.save()
+
+    res.status(StatusCodes.OK)
+  } catch (err) {
+    console.log(err)
+    next(err);
+  }
+};
+
+export {
+  createRawArticles,
+  getAllArticles,
+  patchArticle,
+  deleteArticleDocOrArticle,
+  selectSentence
+};

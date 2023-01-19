@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppContext } from "../context/appContext";
-import { ISingleArticle } from "../context/types";
+import { ISingleArticle, ISingleArticleUpdate } from "../context/types";
 import { FiEdit3 } from "react-icons/fi";
 import { EditArticleModal } from "../components";
 import Wrapper from "../assets/wrappers/ScrapeListWrapper";
@@ -58,7 +58,7 @@ const ScrapeListContainer = ({
           })}
         </ul>
       </div>
-      {showEdit && <EditArticleModal toggleEditModal={closeEditModal} />}
+      {showEdit && <EditArticleModal toggleEditModal={closeEditModal} docId={""} />}
     </Wrapper>
   );
 };

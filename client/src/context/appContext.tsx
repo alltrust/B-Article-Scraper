@@ -4,7 +4,7 @@ import {
   addToLocalStorage,
   removeLocalStorage,
 } from "./helpers/persistingState";
-import { ISingleArticle, StateAndFns } from "./types";
+import { ISingleArticle, ISingleArticleUpdate, StateAndFns } from "./types";
 import { initialContextValue } from "./initialContextValue";
 import { UserData, UserPayload } from "./Actions";
 import reducer from "./reducer";
@@ -71,6 +71,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     // for fail and success cases now
     //persist state if succeeded
     //checkout sessions, cookie, and localstorage options
+    // clearAlert()
   };
 
   const updateUser = async () => {
@@ -91,7 +92,10 @@ export const AppProvider = ({ children }: ChildrenProps) => {
 
       dispatch({
         type: "GET_ARTICLES_SUCCESS",
-        payload: { currentArticles: articles },
+        payload: {
+          currentArticles: articles.articles,
+          currentArticlesId: articles._id,
+        },
       });
 
       displayAlert(message, "success");
@@ -114,28 +118,58 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     }
   };
 
-  const patchArticles = async (updatedArticle: ISingleArticle, docId?:string) => {
-    console.log(updatedArticle);
-    dispatch({type:"SETUP_START"})
+  const patchArticles = async (
+    updatedArticle: ISingleArticleUpdate,
+    docId: string,
+    originOfPatch: "SCRAPE OVERVIEW" | "SCRAPE FORM"
+  ) => {
+    const isBodyUpdated: boolean = updatedArticle.contentBody ? true : false;
     const data = { updatedArticle };
+
     try {
       const response = await authFetchInstance.patch(
         `/articles/${docId}`,
         data
       );
-      const {message} = response.data;
-      displayAlert(message, "success")
-      getArticles()
 
+      const { message, articles } = response.data;
+      displayAlert(message, "success");
+
+      if (originOfPatch !== "SCRAPE FORM") {
+        dispatch({
+          type: "UPDATE_SUCCESS",
+          payload: { currentArticles: articles },
+        });
+      }
+
+      if (!isBodyUpdated && originOfPatch !== "SCRAPE OVERVIEW") {
+        dispatch({
+          type: "UPDATE_SUCCESS",
+          payload: { updatedArticleData: updatedArticle, docId: docId },
+        });
+      } else if (isBodyUpdated && originOfPatch !== "SCRAPE OVERVIEW") {
+        getArticles();
+      }
     } catch (err) {
       console.log(err);
-      dispatch({type:"UPDATE_FAIL"})
+      dispatch({ type: "UPDATE_FAIL" });
+      const error = err as Error | AxiosError;
+      if (!axios.isAxiosError(error)) {
+        displayAlert(error.message, "danger");
+      } else {
+        const { message } = error.response?.data;
+        if (message !== "jwt expired") {
+          displayAlert(message, "danger");
+        } else {
+          displayAlert("Please login again to continue.", "danger");
+          logoutUser();
+        }
+      }
     }
-    clearAlert()
+    clearAlert();
   };
 
   const getArticles = async () => {
-    //set is loading etc...
     dispatch({ type: "GET_ALL_ARTICLES_START" });
     try {
       const response = await authFetchInstance.get("/articles/");
@@ -147,7 +181,86 @@ export const AppProvider = ({ children }: ChildrenProps) => {
       });
     } catch (err) {
       console.log(err);
-      dispatch({type:"SETUP_FAIL"})
+      dispatch({ type: "SETUP_FAIL" });
+      const error = err as Error | AxiosError;
+      if (!axios.isAxiosError(error)) {
+        displayAlert(error.message, "danger");
+      } else {
+        const { message } = error.response?.data;
+        if (message !== "jwt expired") {
+          displayAlert(message, "danger");
+        } else {
+          displayAlert("Please login again to continue.", "danger");
+          logoutUser();
+        }
+      }
+      clearAlert();
+    }
+  };
+
+  const deleteArticleOrDoc = async (docId: string, articleId?: string) => {
+    //send request to the delete article link and the doc itself
+    let idString: string =
+      articleId !== undefined ? `${docId}/${articleId}` : `${docId}`;
+    try {
+      const response = await authFetchInstance.delete(`/articles/${idString}`);
+      const { message } = response.data;
+      displayAlert(message, "success");
+
+      dispatch({
+        type: "DELETE_ARTICLE",
+        payload: { articleId: articleId, docId: docId },
+      });
+    } catch (err) {
+      console.log(err);
+      dispatch({ type: "SETUP_FAIL" });
+      const error = err as Error | AxiosError;
+      if (!axios.isAxiosError(error)) {
+        displayAlert(error.message, "danger");
+      } else {
+        const { message } = error.response?.data;
+        if (message !== "jwt expired") {
+          displayAlert(message, "danger");
+        } else {
+          displayAlert("Please login again to continue.", "danger");
+          logoutUser();
+        }
+      }
+    }
+    clearAlert();
+  };
+
+  const selectArticleSentence = async (
+    id: string,
+    articleDocId: string,
+    articleId: string,
+    isSelected: boolean
+  ) => {
+    // const data = { id, articleDocId, articleId, isSelected };
+    try {
+      dispatch({
+        type: "UPDATE_SENTENCE",
+        payload: { sentenceId: id, docId: articleDocId, articleId, isSelected },
+      });
+      await authFetchInstance.patch(
+        `/articles/${articleDocId}/${articleId}/${id}`
+      );
+    } catch (err) {
+      console.log(err);
+      dispatch({ type: "SETUP_FAIL" });
+      const error = err as Error | AxiosError;
+      if (!axios.isAxiosError(error)) {
+        displayAlert(error.message, "danger");
+      } else {
+        const { message } = error.response?.data;
+        if (message !== "jwt expired") {
+          displayAlert(message, "danger");
+        } else {
+          displayAlert("Please login again to continue.", "danger");
+          logoutUser();
+        }
+      }
+      clearAlert();
     }
   };
 
@@ -166,6 +279,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     articleDoc: value.articleDoc,
     isLoading: value.isLoading,
     patchArticles,
+    deleteArticleOrDoc,
     setupUser,
     updateUser,
     showAlert: value.showAlert,
@@ -173,12 +287,14 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     alertType: value.alertType,
     displayAlert,
     clearAlert,
+    selectArticleSentence,
     postArticlesFromUrls,
     getArticles,
     setArticleToModal,
     logoutUser,
     modalArticle: value.modalArticle,
     currentArticles: value.currentArticles,
+    currentArticlesId: value.currentArticlesId,
   };
   return (
     <AppContext.Provider value={allValues}>{children}</AppContext.Provider>

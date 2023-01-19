@@ -1,5 +1,5 @@
 import express from 'express'
-import { createRawArticles, getAllArticles, patchArticle } from '../controllers/articleController'
+import { createRawArticles, getAllArticles, patchArticle, deleteArticleDocOrArticle, selectSentence } from '../controllers/articleController'
 import authMiddleWare from '../middleware/auth'
 
 const router = express.Router()
@@ -8,11 +8,11 @@ const router = express.Router()
 router.route('/').post(authMiddleWare, createRawArticles).get(authMiddleWare, getAllArticles)
 
 // show all articles that have been scraped before
-router.route('/:articleDocId').patch(authMiddleWare, patchArticle)
+router.route('/:articleDocId').patch(authMiddleWare, patchArticle).delete(authMiddleWare, deleteArticleDocOrArticle)
 //get articles scraped by date scraped
-router.route('/summary/:dateId')
+router.route('/:articleDocId/:articleId').delete(authMiddleWare, deleteArticleDocOrArticle)
 //get ONE article by the article Id
-router.route('/summary/:dateId/:articleId').get().delete().patch()
+router.route('/:articleDocId/:articleId/:sentenceId').patch(authMiddleWare, selectSentence)
 
 
 //get THAT article and summarize

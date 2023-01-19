@@ -1,4 +1,4 @@
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useRef } from "react";
 import { useAppContext } from "../../context/appContext";
 import Wrapper from "../../assets/wrappers/ScrapeFormWrapper";
 import { Alert, ScrapeOverview, LoadingSpinner } from "../../components";
@@ -11,6 +11,7 @@ const ScrapeForm = () => {
     clearAlert,
     showAlert,
     isLoading,
+    currentArticles,
   } = useAppContext();
 
   const urlsRef = useRef<HTMLTextAreaElement>(null);
@@ -54,6 +55,7 @@ const ScrapeForm = () => {
     } else {
       return;
     }
+    clearAlert();
 
     // validate that all the inputs are URLS. (maybe through front and backend with express validator)
   };
@@ -79,7 +81,7 @@ const ScrapeForm = () => {
           </label>
           <textarea id="urls" name="urls" className="url-input" ref={urlsRef} />
         </div>
-        <button disabled={isLoading}  className="btn" type="submit">
+        <button disabled={isLoading} className="btn" type="submit">
           Scrape all
         </button>
       </form>
@@ -89,6 +91,5 @@ const ScrapeForm = () => {
     </Wrapper>
   );
 };
-
 
 export default ScrapeForm;

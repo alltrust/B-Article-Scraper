@@ -1,10 +1,12 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAppContext } from "../context/appContext";
 import Wrapper from "../assets/wrappers/navbarcontainer";
 
 const SideNav = () => {
   const { user, logoutUser } = useAppContext();
   const username = user?.username;
+
+  const { pathname } = useLocation();
 
   const activeClassName = "active";
   const linkClass = "nav-link";
@@ -27,7 +29,6 @@ const SideNav = () => {
         className={({ isActive }) =>
           isActive ? `${activeClassName} primary-nav` : linkClass
         }
-        end
       >
         Articles
       </NavLink>
@@ -36,7 +37,6 @@ const SideNav = () => {
         className={({ isActive }) =>
           isActive ? `${activeClassName} primary-nav` : linkClass
         }
-        end
       >
         Profile
       </NavLink>

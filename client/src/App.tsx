@@ -1,6 +1,5 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Error, Register } from "./pages/index";
+import { Error, Preview, Register } from "./pages/index";
 import {
   Profile,
   Articles,
@@ -10,7 +9,6 @@ import {
 import ProtectedRoutes from "./pages/navigation/ProtectedRoutes";
 
 function App() {
-  
   return (
     <BrowserRouter>
       <Routes>
@@ -25,6 +23,7 @@ function App() {
           <Route index element={<ScrapeForm />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/articles" element={<Articles />} />
+          <Route path="/articles/:articleDocId" element={<Preview />} />
         </Route>
         <Route path="/register" element={<Register />} />
         <Route path="*" element={<Error />} />

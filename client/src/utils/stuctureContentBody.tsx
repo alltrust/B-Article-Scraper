@@ -1,0 +1,51 @@
+const testContentBody = [
+  "Multi-state operators will be able to move into New York’s emerging adult use market, but at a stiff premium, according to new proposed regulations approved on Monday by the state’s Cannabis Control Board",
+  "The 10 MSOs that operate the state’s medical market would have to pay as much as $5 million up front for adult use cultivation, and $3 million for a collocated dispensary.The meeting, which was the board’s first in two months, also officially marked the first batch of approvals for Condition Adult Use Retail Dispensaries",
+  "The CCB gave the green light to 36 operators, amid a state lawsuit that has already blocked licenses in parts of the state.“I can speak for all of us here, those who care about equity and justice and those who have worked on this issue for so long, it’s been an honor to be a part of this journey,” said OCM Executive Director Chris Alexander",
+  "“The application for the conditional adult use retail dispensaries is the final step in the supply chain we’ve been building since March.”Back in March, the CCB approved Governor Kathy Hochul’s Seeding Opportunity Initiative, which reserved the first round of cultivator licenses for existing hemp farmers and retail licenses to individuals with previous cannabis convictions.“Not long ago the idea of New York legalizing cannabis seemed unbelievable,” added CCB Chairwoman Tremaine Wright.The board also approved 16 more cultivators and 8 more processors, bringing the total of each to 277 and 33, respectively.Following the meeting, OCM took to social media to clarify that it had originally intended to approve 18 more CAURD applicants – three from the Finger Lakes region, six from Mid-Hudson, four from Western New York, one from Central New York and four in Brooklyn.“Due to active litigation, the office was blocked from doing so",
+  "We will keep fighting to get stores open across the state,” announced the agency.Variscite NY One sued the state claiming it was unfairly blocked from applying for a CAURD because the majority owner, Kenneth Gay, only has a cannabis conviction in Michigan, rather than New York",
+  "CAURD are exclusively reserved for operators with a cannabis-related criminal record, but the geographic distinction violates the dormant Commerce Clause of the U|S Constitution, according to the lawsuit.US District Judge Gary Sharp issued an injunction on November 10, preventing the CCB from approving CAURD licenses for applicants from the five geographic areas that Gay specified he was attempting to move into",
+  "They include the Finger Lakes, Central New York, Western New York, Mid-Hudson and Brooklyn.New York’s Cannabis Control Board approved a 282 pages of regulation for the new adult use market, starting a 60-day comment period, after which the board can decide to amend the rules or officially adopt them as is.The new regulation defined the state’s fee schedule for applicants and operators",
+  "All applicants must pay a non-refundable $1,000 fee, and additional licensing fees vary depending on the license type and business size, going as high as $100,000 for Tier V cultivation.The only multi-state organizations that will be able to operate within New York’s adult use market are those that already serve the medical market as Registered Operators",
+  "To get into the adult use market, they will have to obtain a license as a Registered Operator with Dispensing or a Registered Operator with No Dispensing for cultivation, process or other non-retail functions.Michigan operators questioning testing system’s integrity after confusion surrounding November recallROND must make an initial payment of $5 million before its first adult-use sale",
+  "Within their first five years of operation, they must either pay an additional $1 million or 2% of all gross revenue",
+  "ROD license holders are also required to pay an initial fee of $3 million.This means that out of state companies will have to pay a premier if they want access to New York’s market",
+  "They also have to pick a side on the supply chain between retail and the cultivation and production side.No true party of interest in a ROD or ROND may be involved with another licensed cannabis business, with the exception of being a passive investor.Social Equity applicants can include individuals from a disproportionately impacted area, minority-owned, women-owned or service-disabled veteran-owned business, or a distressed farmer.The regulation limits the extent to which individual municipalities can complicate efforts from cannabis operators to move into town.Municipalities are forbidden from imposing special taxes or fees on cannabis operators, except for fees that already apply to off-premise liquor stores.Municipalities with a population greater than 20,000 may not limit retail dispensaries from having to be located more than 1,000 feet away from another cannabis retailer",
+  "Municipalities with fewer than 20,000 residents may space out dispensaries as far as 2,000 feet from each other.Dispensaries or consumption lounges must remain at least 200 feet away from a house of worship and 500 feet away from school grounds",
+  "Municipalities can opt in to prevent dispensaries from being closer than 500 feet of a community facility, but they cannot impose limits that are more prohibitive than the distances that the state has already defined.Applicants must have a signed labor peace agreement with a local union.Operators may only own a single cultivation license, which is broken down into four types, outdoor, mixed light, outdoor with mixed light and indoor",
+  "The licenses are also separated into five tiers based on canopy size, with no more than 5,000 square feet allowed in Tier I, up to a limit of 100,000 square feet at Tier V.“As we have seen in legal markets across this country, access alone doesn’t cut it,” said Damian Fagon, OCM’s Chief Equity Officer",
+  "“The tiered market enshrined in the Cannabis Law, and further clarified in today’s regulatory package, accounts for the numerous ways in which predatory capital and extractive arrangements have often exploited, tokenized, and bankrupted equity operators across this country",
+  "In the absence of strong antitrust provisions, a legal marketplace will inevitably reflect legacy disparities across wealth, race, and privilege.”\nIllinois regulatory consolidation bill quietly introduced – with administration fingerprints all over itRelated\nShare:Two charts on Midwest cannabis salesMassachusetts tops 200 adult use retailer licenses as industry continues to growROND must make an initial payment of $5 million before its first adult-use sale",
+  "Within their first five years of operation, they must either pay an additional $1 million or 2% of all gross revenue",
+  "ROD license holders are also required to pay an initial fee of $3 million.This means that out of state companies will have to pay a premier if they want access to New York’s market",
+  "They also have to pick a side on the supply chain between retail and the cultivation and production side.No true party of interest in a ROD or ROND may be involved with another licensed cannabis business, with the exception of being a passive investor.Social Equity applicants can include individuals from a disproportionately impacted area, minority-owned, women-owned or service-disabled veteran-owned business, or a distressed farmer.The regulation limits the extent to which individual municipalities can complicate efforts from cannabis operators to move into town.Municipalities are forbidden from imposing special taxes or fees on cannabis operators, except for fees that already apply to off-premise liquor stores.Municipalities with a population greater than 20,000 may not limit retail dispensaries from having to be located more than 1,000 feet away from another cannabis retailer",
+  "Municipalities with fewer than 20,000 residents may space out dispensaries as far as 2,000 feet from each other.Dispensaries or consumption lounges must remain at least 200 feet away from a house of worship and 500 feet away from school grounds",
+  "Municipalities can opt in to prevent dispensaries from being closer than 500 feet of a community facility, but they cannot impose limits that are more prohibitive than the distances that the state has already defined.Applicants must have a signed labor peace agreement with a local union.Operators may only own a single cultivation license, which is broken down into four types, outdoor, mixed light, outdoor with mixed light and indoor",
+  "The licenses are also separated into five tiers based on canopy size, with no more than 5,000 square feet allowed in Tier I, up to a limit of 100,000 square feet at Tier V.“As we have seen in legal markets across this country, access alone doesn’t cut it,” said Damian Fagon, OCM’s Chief Equity Officer",
+  "“The tiered market enshrined in the Cannabis Law, and further clarified in today’s regulatory package, accounts for the numerous ways in which predatory capital and extractive arrangements have often exploited, tokenized, and bankrupted equity operators across this country",
+  "In the absence of strong antitrust provisions, a legal marketplace will inevitably reflect legacy disparities across wealth, race, and privilege.”Zack cut his journalistic teeth covering high school sports in the south before spending a decade covering local government, politics and the courts in the Boston, Massachusetts area",
+  "He's previously written...More by Zack Huffman",
+];
+
+const structureContentBody = (contentBody: string[]) => {
+  const organizedParagraphs: string[] = [];
+  let groupOfTwoSentences: string = "";
+  let sentenceCount = 0;
+  for (let i = 0; i < contentBody.length + 1; i++) {
+    const currentSentence = contentBody[i];
+    const sentenceWithPunctuation = currentSentence + ". ";
+    groupOfTwoSentences += sentenceWithPunctuation;
+    sentenceCount += 1;
+    if (sentenceCount === 2) {
+      organizedParagraphs.push(groupOfTwoSentences);
+      groupOfTwoSentences = "";
+      sentenceCount = 0;
+    }
+  }
+  return organizedParagraphs;
+};
+
+const sample = structureContentBody(testContentBody);
+console.log(sample);
+console.log(sample.length);
+export default structureContentBody;

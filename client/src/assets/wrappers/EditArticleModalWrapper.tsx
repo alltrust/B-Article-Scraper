@@ -2,12 +2,12 @@ import styled from "styled-components";
 
 const EditArticleModalWrapper = styled.div`
   background-color: var(--primary-600);
-  position: absolute;
+  position: fixed;
   margin: auto;
   padding: 20px;
   left: 0;
   right: 0;
-  top: 30%;
+  top: 10%;
   width: 75%;
   min-height: 12rem;
   border-radius: 10px;

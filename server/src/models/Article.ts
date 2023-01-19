@@ -3,8 +3,16 @@ import mongoose, { Schema, model, Types } from "mongoose";
 export interface Article {
   url: string;
   heading: string;
-  contentBody: string[];
-  _id?: Schema.Types.ObjectId
+  companyName: string;
+  ticker: string;
+  contentBody: [
+    {
+      _id?: Schema.Types.ObjectId;
+      section: string;
+      isSelected: boolean;
+    }
+  ];
+  _id?: Schema.Types.ObjectId;
 }
 
 export interface IRawArticles extends mongoose.Document {
@@ -15,20 +23,27 @@ export interface IRawArticles extends mongoose.Document {
 }
 
 const ArticleSchema = new Schema<Article>({
-  url: { type: String},
-  heading: { type: String},
-  contentBody: { type: [String]},
+  url: { type: String },
+  heading: { type: String },
+  companyName: { type: String },
+  ticker: { type: String },
+  contentBody: {
+    type: [
+      {
+        section: String,
+        isSelected: { type: Boolean, default: false },
+      },
+    ],
+  },
 });
 
 const RawArticlesSchema = new Schema<IRawArticles>(
   {
-    articles: { type: [ArticleSchema], required:true },
+    articles: [ArticleSchema],
     description: { type: String, minlength: 4 },
-    // dataFromURLs: { type: String },
     createdBy: {
       type: Types.ObjectId,
       ref: "User",
-      // required: [true, "Please provide user"],
     },
   },
   { timestamps: true }

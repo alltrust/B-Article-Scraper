@@ -77,11 +77,6 @@ body {
   color: var(--textColor);
 }
 
-p {
-  margin-bottom: 1.5rem;
-  max-width: 40em;
-}
-
 h1,
 h2,
 h3,
@@ -342,7 +337,8 @@ ul {
 }
 
 .overlay {
-  position: absolute;
+  position: fixed;
+  margin: 0;
   left: 0;
   right: 0;
   top: 0;

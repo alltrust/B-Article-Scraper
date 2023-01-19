@@ -1,4 +1,4 @@
-import { ISingleArticle } from "./types";
+import { ISingleArticle, ISingleArticleUpdate } from "./types";
 
 export interface UserData {
   username?: string;
@@ -25,7 +25,10 @@ export interface ActionTypesAndPayload {
     | "GET_ALL_ARTICLES_START"
     | "GET_ARTICLES_SUCCESS"
     | "SET_MODAL_ARTICLE"
-    | "UPDATE_FAIL";
+    | "UPDATE_SUCCESS"
+    | "UPDATE_FAIL"
+    | "DELETE_ARTICLE"
+    | "UPDATE_SENTENCE";
   payload?: {
     user?: UserPayload["user"];
     token?: UserPayload["token"];
@@ -33,9 +36,14 @@ export interface ActionTypesAndPayload {
     alertType?: string;
     articleDoc?: [];
     currentArticles?: [];
-    modalArticle?:ISingleArticle;
+    currentArticlesId?: string;
+    modalArticle?: ISingleArticle;
     rawArticlesId?: string;
     articleId?: string;
+    docId?: string;
+    updatedArticleData?: ISingleArticleUpdate;
     msg?: string;
+    sentenceId?: string;
+    isSelected?: boolean;
   };
 }
