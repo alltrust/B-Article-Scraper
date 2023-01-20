@@ -9,6 +9,7 @@ import { initialContextValue } from "./initialContextValue";
 import { UserData, UserPayload } from "./Actions";
 import reducer from "./reducer";
 import axiosInstance from "./helpers/axiosInstance";
+import errorHandler from "./helpers/errorHandler";
 
 interface ChildrenProps {
   children: React.ReactNode;
@@ -59,24 +60,30 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     } catch (err) {
       const error = err as AxiosError | Error;
       dispatch({ type: "SETUP_FAIL" });
-      if (!axios.isAxiosError(error)) {
-        displayAlert(error.message, "danger");
-      } else {
-        const { message } = error.response?.data;
-        displayAlert(message, "danger");
-        // clearAlert()
-        // throw new Error(message);
-      }
+      errorHandler(error, displayAlert, logoutUser);
     }
-    // for fail and success cases now
-    //persist state if succeeded
-    //checkout sessions, cookie, and localstorage options
-    // clearAlert()
   };
 
-  const updateUser = async () => {
-    const response = await authFetchInstance.patch("/user/update");
-    console.log(response);
+  const updateUser = async (userData:UserData) => {
+    dispatch({type:"SETUP_START"})
+    // const {email, username} = user
+    try{
+
+      const response = await authFetchInstance.patch("/user/update", userData);
+      console.log(response);
+      const {user, token} = response.data
+
+      if(user){
+        dispatch({type:"SETUP_SUCCESS", payload:{user, token}})
+      }
+    }catch(err){
+      const error = err as AxiosError | Error;
+      dispatch({type:"SETUP_FAIL"})
+      errorHandler(error, displayAlert, logoutUser)
+
+
+    }
+    clearAlert()
   };
 
   const postArticlesFromUrls = async (urls: string[], description: string) => {
@@ -99,23 +106,13 @@ export const AppProvider = ({ children }: ChildrenProps) => {
       });
 
       displayAlert(message, "success");
-      clearAlert();
     } catch (err) {
-      console.log(err);
+      const error = err as AxiosError | Error;
+
       dispatch({ type: "SETUP_FAIL" });
-      const error = err as Error | AxiosError;
-      if (!axios.isAxiosError(error)) {
-        displayAlert(error.message, "danger");
-      } else {
-        const { message } = error.response?.data;
-        if (message !== "jwt expired") {
-          displayAlert(message, "danger");
-        } else {
-          displayAlert("Please login again to continue.", "danger");
-          logoutUser();
-        }
-      }
+      errorHandler(error, displayAlert, logoutUser);
     }
+    clearAlert();
   };
 
   const patchArticles = async (
@@ -151,20 +148,9 @@ export const AppProvider = ({ children }: ChildrenProps) => {
         getArticles();
       }
     } catch (err) {
-      console.log(err);
-      dispatch({ type: "UPDATE_FAIL" });
-      const error = err as Error | AxiosError;
-      if (!axios.isAxiosError(error)) {
-        displayAlert(error.message, "danger");
-      } else {
-        const { message } = error.response?.data;
-        if (message !== "jwt expired") {
-          displayAlert(message, "danger");
-        } else {
-          displayAlert("Please login again to continue.", "danger");
-          logoutUser();
-        }
-      }
+      const error = err as AxiosError | Error;
+      dispatch({ type: "SETUP_FAIL" });
+      errorHandler(error, displayAlert, logoutUser);
     }
     clearAlert();
   };
@@ -180,22 +166,11 @@ export const AppProvider = ({ children }: ChildrenProps) => {
         payload: { articleDoc: articleDoc },
       });
     } catch (err) {
-      console.log(err);
+      const error = err as AxiosError | Error;
       dispatch({ type: "SETUP_FAIL" });
-      const error = err as Error | AxiosError;
-      if (!axios.isAxiosError(error)) {
-        displayAlert(error.message, "danger");
-      } else {
-        const { message } = error.response?.data;
-        if (message !== "jwt expired") {
-          displayAlert(message, "danger");
-        } else {
-          displayAlert("Please login again to continue.", "danger");
-          logoutUser();
-        }
-      }
-      clearAlert();
+      errorHandler(error, displayAlert, logoutUser);
     }
+    clearAlert();
   };
 
   const deleteArticleOrDoc = async (docId: string, articleId?: string) => {
@@ -212,20 +187,10 @@ export const AppProvider = ({ children }: ChildrenProps) => {
         payload: { articleId: articleId, docId: docId },
       });
     } catch (err) {
-      console.log(err);
+      const error = err as AxiosError | Error;
+
       dispatch({ type: "SETUP_FAIL" });
-      const error = err as Error | AxiosError;
-      if (!axios.isAxiosError(error)) {
-        displayAlert(error.message, "danger");
-      } else {
-        const { message } = error.response?.data;
-        if (message !== "jwt expired") {
-          displayAlert(message, "danger");
-        } else {
-          displayAlert("Please login again to continue.", "danger");
-          logoutUser();
-        }
-      }
+      errorHandler(error, displayAlert, logoutUser);
     }
     clearAlert();
   };
@@ -236,7 +201,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     articleId: string,
     isSelected: boolean
   ) => {
-    // const data = { id, articleDocId, articleId, isSelected };
+
     try {
       dispatch({
         type: "UPDATE_SENTENCE",
@@ -246,22 +211,12 @@ export const AppProvider = ({ children }: ChildrenProps) => {
         `/articles/${articleDocId}/${articleId}/${id}`
       );
     } catch (err) {
-      console.log(err);
+      const error = err as AxiosError | Error;
+
       dispatch({ type: "SETUP_FAIL" });
-      const error = err as Error | AxiosError;
-      if (!axios.isAxiosError(error)) {
-        displayAlert(error.message, "danger");
-      } else {
-        const { message } = error.response?.data;
-        if (message !== "jwt expired") {
-          displayAlert(message, "danger");
-        } else {
-          displayAlert("Please login again to continue.", "danger");
-          logoutUser();
-        }
-      }
-      clearAlert();
+      errorHandler(error, displayAlert, logoutUser);
     }
+    clearAlert();
   };
 
   const setArticleToModal = (article: ISingleArticle) => {

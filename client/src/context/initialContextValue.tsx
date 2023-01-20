@@ -1,8 +1,10 @@
-import { AllState, StateAndFns } from "./types";
-import { user, token } from "./helpers/persistingState";
+import { AllState } from "./types";
+import { getFromLocalStorage } from "./helpers/persistingState";
+
+const { user, token } = getFromLocalStorage();
 
 const initialContextValue: AllState = {
-  user: user ? JSON.parse(user) : null,
+  user:  user? JSON.parse(user) : null,
   token: token,
   currentArticles: [],
   currentArticlesId: "",

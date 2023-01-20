@@ -1,96 +1,14 @@
 import { Request, Response, NextFunction } from "express";
 import RawArticles, { Article } from "../models/Article";
-import axios, { AxiosError } from "axios";
-import cloudscraper from "cloudscraper";
 import {
-  scrapeDataFromUrls,
-  siteCheck,
+  scrapeRawArticles,
   configureScrapedContent,
   tickerAndCoNameFilter,
 } from "./helpers";
 import { StatusCodes } from "http-status-codes";
 import { UserRequest } from "../middleware/auth";
-import { BadErrorRequest, NotFoundRequest } from "../errors";
+import { NotFoundRequest } from "../errors";
 import { Types } from "mongoose";
-
-const scrapeRawArticles = async (urls: string[]) => {
-  let articlesContent: Article[] = [];
-
-  try {
-    const responseArray = await Promise.allSettled(
-      urls.map(async (url) => {
-        const response = await axios.get(url);
-        return { response, url };
-      })
-    );
-
-    const rejectedResults = responseArray
-      .filter(
-        <T>(
-          response: PromiseSettledResult<T>
-        ): response is PromiseRejectedResult => response.status === "rejected"
-      )
-      .map((responses) => {
-        const rejectedConfig = responses.reason.config;
-        const rejectedUrl = rejectedConfig.url;
-        return rejectedUrl;
-      });
-
-    const responseArrayOfRejected = await Promise.allSettled(
-      rejectedResults.map(async (url) => {
-        const response = await cloudscraper(url);
-        return { response, url };
-      })
-    );
-
-    const fullResponseArray = responseArray.concat(responseArrayOfRejected);
-    //check any rejected as well and send info back
-
-    const fulfilledResults = fullResponseArray
-      .filter(
-        <T>(
-          response: PromiseSettledResult<T>
-        ): response is PromiseFulfilledResult<T> => {
-          return response.status === "fulfilled";
-        }
-      )
-      .map((successfulResponse) => {
-        let data = successfulResponse.value.response.data;
-        if (!data) {
-          data = successfulResponse.value.response;
-        }
-        const { articleParagraphsSelector, articleHeadingSelector } = siteCheck(
-          successfulResponse.value.url
-        );
-        //insert scraped ticker and scraped co. name
-        const {
-          scrapedHeader,
-          scrapedParagraphs,
-          scrapedCoName,
-          scrapedTicker,
-        } = scrapeDataFromUrls(
-          data,
-          articleParagraphsSelector,
-          articleHeadingSelector
-        );
-        return {
-          url: successfulResponse.value.url,
-          heading: scrapedHeader,
-          companyName: scrapedCoName,
-          ticker: scrapedTicker,
-          contentBody: scrapedParagraphs,
-        };
-      });
-
-    articlesContent = fulfilledResults;
-    return articlesContent;
-  } catch (err) {
-    const errors = err as Error | AxiosError;
-    console.log(errors);
-
-    throw new Error(errors.message);
-  }
-};
 
 const createRawArticles = async (
   req: UserRequest,
@@ -104,6 +22,7 @@ const createRawArticles = async (
         createdBy: req.user?.userId,
         description: description || "no description provided",
       });
+
       const articleData = await scrapeRawArticles(urls);
 
       if (!articleData) {
@@ -113,6 +32,7 @@ const createRawArticles = async (
         articleData.map(async (article) => {
           rawArticles.articles.push(article);
         });
+
         const rawArticleDoc = await rawArticles.save();
 
         res.status(StatusCodes.CREATED).json({
@@ -134,7 +54,10 @@ const getAllArticles = async (
   try {
     const articleDoc = await RawArticles.find({ createdBy: req.user?.userId });
 
-    //if no article data is found send error and next it
+    if (!articleDoc) {
+      throw new NotFoundRequest("No articles found.");
+    }
+
     res.status(StatusCodes.OK).json({ articleDoc });
   } catch (err) {
     next(err);
@@ -148,8 +71,7 @@ const patchArticle = async (
 ) => {
   const { articleDocId } = req.params;
   const { updatedArticle } = req.body;
-  //check if the updated articles heading and content are empty... then throw an error
-  // do this in the front end!
+
   let editedParagraphs: Article["contentBody"] = [
     {
       section: "",
@@ -179,10 +101,9 @@ const patchArticle = async (
   }
 
   try {
-    //do this with $ moongoose aggregate
     const articleParentDoc = await RawArticles.findOne({ _id: articleDocId });
-
     const docArticles = articleParentDoc?.articles;
+
     const indexOfArticle = docArticles?.findIndex((article) => {
       return article._id?.toString() === updatedArticle._id;
     });
@@ -206,6 +127,7 @@ const patchArticle = async (
     } else {
       throw new NotFoundRequest("Article you want to update does not exist.");
     }
+
     res.status(StatusCodes.OK).send({
       message: "Successfully updated your post.",
       articles: articleParentDoc.articles,
@@ -222,6 +144,7 @@ const deleteArticleDocOrArticle = async (
 ) => {
   const { articleId, articleDocId } = req.params;
   let message: string;
+
   try {
     if (!articleId) {
       await RawArticles.deleteOne({ _id: articleDocId });
@@ -234,6 +157,7 @@ const deleteArticleDocOrArticle = async (
       );
       message = "Successfully deleted your article";
     }
+
     res.status(StatusCodes.OK).json({ message: message });
   } catch (err) {
     next(err);
@@ -246,25 +170,30 @@ const selectSentence = async (
   next: NextFunction
 ) => {
   const { articleDocId, articleId, sentenceId } = req.params;
-  console.log(sentenceId)
+
   try {
-    const articleDoc = await RawArticles.findOne({_id:articleDocId})
-    if(!articleDoc){
-      throw new NotFoundRequest("Document not founc")
+    const articleDoc = await RawArticles.findOne({ _id: articleDocId });
+
+    if (!articleDoc) {
+      throw new NotFoundRequest("Document not founc");
     }
-    const articleIdx = articleDoc.articles.findIndex(article=> article._id?.toString() === articleId);
+
+    const articleIdx = articleDoc.articles.findIndex(
+      (article) => article._id?.toString() === articleId
+    );
     const article = articleDoc.articles[articleIdx];
 
-    const sentenceIdx = article.contentBody.findIndex(content=> content._id?.toString()=== sentenceId)
+    const sentenceIdx = article.contentBody.findIndex(
+      (content) => content._id?.toString() === sentenceId
+    );
 
-    const sentenceIsSelected = article.contentBody[sentenceIdx].isSelected
-    articleDoc.articles[articleIdx].contentBody[sentenceIdx].isSelected = !sentenceIsSelected
+    const sentenceIsSelected = article.contentBody[sentenceIdx].isSelected;
+    articleDoc.articles[articleIdx].contentBody[sentenceIdx].isSelected =
+      !sentenceIsSelected;
 
-    articleDoc.save()
-
-    res.status(StatusCodes.OK)
+    articleDoc.save();
+    res.status(StatusCodes.OK);
   } catch (err) {
-    console.log(err)
     next(err);
   }
 };
@@ -274,5 +203,5 @@ export {
   getAllArticles,
   patchArticle,
   deleteArticleDocOrArticle,
-  selectSentence
+  selectSentence,
 };

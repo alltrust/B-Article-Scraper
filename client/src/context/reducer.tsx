@@ -6,7 +6,6 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
     case "SETUP_START":
       return { ...state, isLoading: true };
     case "SETUP_FAIL":
-      //set up alert with appropriate message and message locations
       return { ...state, isLoading: false };
     case "SETUP_SUCCESS":
       if (action.payload) {
@@ -64,13 +63,11 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
     case "UPDATE_SUCCESS":
       if (action.payload) {
         const { currentArticles, updatedArticleData, docId } = action.payload;
-        // let articleToUpdate;
+
         if (currentArticles) {
           return { ...state, currentArticles: currentArticles };
         } else if (updatedArticleData) {
-          // return { ...state };
           const { ticker, companyName, heading, _id } = updatedArticleData;
-          //find the docId
           const docIdx = state.articleDoc.findIndex((doc) => {
             return doc._id === docId;
           });
@@ -88,6 +85,7 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
             selectedDoc.articles[articleIdx].ticker = ticker;
             selectedDoc.articles[articleIdx].heading = heading;
           }
+          //check this
           return { ...state };
         } else {
           return { ...state };
@@ -126,8 +124,6 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
         return {
           ...state,
         };
-
-        // return{...state, articleDoc:{...state.articleDoc, articles:{...state.articleDoc.articles, }}}
       } else {
         return { ...state };
       }
@@ -136,10 +132,12 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
     case "DELETE_ARTICLE":
       if (action.payload) {
         const { articleId, docId } = action.payload;
+
         if (!articleId) {
           const updatedDocs = state.articleDoc.filter((doc) => {
             return doc._id !== docId;
           });
+
           return { ...state, articleDoc: updatedDocs };
         } else {
           const allArticleDoc = [...state.articleDoc];
@@ -159,7 +157,8 @@ const reducer = (state: AllState, action: ActionTypesAndPayload): any => {
       }
 
     default:
-      throw new Error("ERROR FROM REDUCER");
+      throw new Error("FROM REDUCER")
+      // return {...state}
   }
 };
 

@@ -4,6 +4,7 @@
   "description": "Scrape multiple web articles",
   "main": "index.js",
   "scripts": {
+    "build-client" : "cd client && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "server": "npm run dev server --prefix server --ignore client",
     "client": "npm start client --prefix client",

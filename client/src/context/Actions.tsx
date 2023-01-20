@@ -3,7 +3,7 @@ import { ISingleArticle, ISingleArticleUpdate } from "./types";
 export interface UserData {
   username?: string;
   email?: string;
-  password: string;
+  password?: string;
 }
 
 export interface UserPayload {

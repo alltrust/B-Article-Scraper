@@ -22,7 +22,7 @@ const handlePlaceholdersForPeriods = (text: string) => {
   const commonAbbreviationsRegex: RegExp = /(?<=\.[a-z|A-Z])\./g;
   const honorificsAndPopularAbbrRegex: RegExp =
     /(?<= Mr| Dr| Mrs| Ms| Prof| Gov| Corp| Co| ltd| Ltd| Inc|Sen)\./g;
-  // const random
+    
   textWithPlaceholders = text
     .replace(nbspRegex, " ")
     .replace(decimalRegex, "|")
@@ -43,8 +43,5 @@ const configureScrapedContent = (text: string): string[] => {
 
   return configuredText.split(splitSeparator);
 };
-
-// const test = configureScrapedContent(text)
-// console.log(test)
 
 export default configureScrapedContent;

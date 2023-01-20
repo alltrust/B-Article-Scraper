@@ -16,9 +16,11 @@ const SingleArticleParagraphs = ({
   const { selectArticleSentence } = useAppContext();
 
   const toggleSelection = (sentenceId: string) => {
-    //also pass in the docId & articleId
-    const sentenceIdx= contentBody.findIndex(sentence => sentence._id === sentenceId);
-    const isSelected = contentBody[sentenceIdx].isSelected = !contentBody[sentenceIdx].isSelected
+    const sentenceIdx = contentBody.findIndex(
+      (sentence) => sentence._id === sentenceId
+    );
+    const isSelected = (contentBody[sentenceIdx].isSelected =
+      !contentBody[sentenceIdx].isSelected);
 
     selectArticleSentence(sentenceId, articleDocId, articleId, isSelected);
   };

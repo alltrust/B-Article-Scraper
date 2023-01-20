@@ -32,7 +32,6 @@ const SingleArticle = ({
   const { setArticleToModal } = useAppContext();
   const [toggleValue, setToggleValue] = useState(initialToggles);
 
-
   const showModalAndAssignArticle = () => {
     const article = {
       url,
@@ -88,7 +87,12 @@ const SingleArticle = ({
           <div className="article-content">
             <div className="article-url-container">
               View Article
-              <a href={url} target="_blank" rel="noopener noreferrer"  className="article-url link">
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="article-url link"
+              >
                 Here
               </a>
             </div>
@@ -102,9 +106,13 @@ const SingleArticle = ({
             </div>
             <div className="article-property">
               <h5>Heading:</h5>
-              <p>{heading!== "" ? heading : "No heading found"}</p>
+              <p>{heading !== "" ? heading : "No heading found"}</p>
             </div>
-            <SingleArticleParagraphs articleDocId={docId} articleId={_id} contentBody={contentBody} />
+            <SingleArticleParagraphs
+              articleDocId={docId}
+              articleId={_id}
+              contentBody={contentBody}
+            />
           </div>
         )}
         {heading !== "" ? (
@@ -113,7 +121,7 @@ const SingleArticle = ({
           </div>
         ) : (
           <div className="non-article-header-container">
-           {!toggleValue.contentShow && "No heading found"}
+            {!toggleValue.contentShow && "No heading found"}
           </div>
         )}
         <div className="icons-container">

@@ -24,9 +24,7 @@ app.get("/", (req, res, next) => {
 app.use('/api/v1/user', userRoutes)
 app.use('/api/v1/articles', articleRoutes)
 
-//to be transferred to error-handling middleware
 app.use(errorHandlerMiddleware)
-//if there a completely non-existent path not-found
 app.use(notFoundMiddlware)
 
 const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;

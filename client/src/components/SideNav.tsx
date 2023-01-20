@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAppContext } from "../context/appContext";
 import Wrapper from "../assets/wrappers/navbarcontainer";
 
@@ -6,15 +6,12 @@ const SideNav = () => {
   const { user, logoutUser } = useAppContext();
   const username = user?.username;
 
-  const { pathname } = useLocation();
-
   const activeClassName = "active";
   const linkClass = "nav-link";
 
   return (
     <Wrapper>
       <h3>{username}</h3>
-
       <NavLink
         to={"/"}
         className={({ isActive }) =>
@@ -40,7 +37,9 @@ const SideNav = () => {
       >
         Profile
       </NavLink>
-      <button onClick={logoutUser}>LOGOUT</button>
+      <button className="btn logout-btn" onClick={logoutUser}>
+        LOGOUT
+      </button>
     </Wrapper>
   );
 };

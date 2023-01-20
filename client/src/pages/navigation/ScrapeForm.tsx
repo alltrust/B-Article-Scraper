@@ -11,7 +11,6 @@ const ScrapeForm = () => {
     clearAlert,
     showAlert,
     isLoading,
-    currentArticles,
   } = useAppContext();
 
   const urlsRef = useRef<HTMLTextAreaElement>(null);
@@ -57,7 +56,6 @@ const ScrapeForm = () => {
     }
     clearAlert();
 
-    // validate that all the inputs are URLS. (maybe through front and backend with express validator)
   };
   return (
     <Wrapper>

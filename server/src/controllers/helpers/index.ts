@@ -5,6 +5,7 @@ import configureScrapedContent from "./configureScrapedContent";
 import scrapeTicker from "./scrapeTicker";
 import scrapeCoName from "./scrapeCoName";
 import tickerAndCoNameFilter from "./tickerAndCoNameFilter";
+import scrapeRawArticles from "./scrapeRawArticles";
 
 export {
   scrapeDataFromUrls,
@@ -13,5 +14,6 @@ export {
   configureScrapedContent,
   scrapeTicker,
   scrapeCoName,
-  tickerAndCoNameFilter
+  tickerAndCoNameFilter,
+  scrapeRawArticles
 };

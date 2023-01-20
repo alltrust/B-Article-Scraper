@@ -1,4 +1,3 @@
-import { Key } from "react";
 import { UserData } from "./Actions";
 
 interface User {
@@ -21,7 +20,6 @@ export interface ISingleArticle {
     }
   ];
   docId: string;
-  // children?: React.ReactNode
 }
 
 type IArticleUpdate = Omit<ISingleArticle, "contentBody">;
@@ -30,16 +28,11 @@ export interface ISingleArticleUpdate extends IArticleUpdate {
   contentBody?: string[];
 }
 
-// interface ISingleArticleUpdate{
-// contentBody: string[]
-// }
-
 export interface IArticleDoc {
   _id: string;
   description?: string;
   createdBy?: string;
   articles?: ISingleArticle[];
-  // toggleArticleDoc: (docId:string)=> void,
 }
 
 export interface AllState {
@@ -57,7 +50,7 @@ export interface AllState {
 
 export interface StateAndFns extends AllState {
   setupUser: (data: UserData, endpoint: string) => Promise<void>;
-  updateUser: () => Promise<void>;
+  updateUser: (data:UserData) => Promise<void>;
   displayAlert: (text: string, type: string) => void;
   clearAlert: () => void;
   postArticlesFromUrls: (urls: string[], description: string) => Promise<void>;
@@ -74,6 +67,6 @@ export interface StateAndFns extends AllState {
     sentenceId: string,
     artcielDocId: string,
     articleId: string,
-    isSelected: boolean,
+    isSelected: boolean
   ) => Promise<void>;
 }

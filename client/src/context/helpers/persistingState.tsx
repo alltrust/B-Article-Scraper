@@ -1,3 +1,4 @@
+
 const addToLocalStorage = (user: string, token: string) => {
   localStorage.setItem("token", token);
   localStorage.setItem("user", user);
@@ -9,7 +10,12 @@ const removeLocalStorage = () => {
   localStorage.removeItem("user");
 };
 
-const user = localStorage.getItem("user");
-const token = localStorage.getItem("token");
+const getFromLocalStorage = () => {
+  const user = localStorage.getItem("user");
+  const token = localStorage.getItem("token");
 
-export {addToLocalStorage, removeLocalStorage,user, token }
+  
+  return { user, token };
+};
+
+export { addToLocalStorage, removeLocalStorage, getFromLocalStorage };

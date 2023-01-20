@@ -22,7 +22,6 @@ const registerUser = async (
     }
     const user = await User.create(req.body);
     const token = user.createJWT();
-    console.log(user);
 
     res.status(StatusCodes.CREATED).json({
       user: {
