@@ -9,7 +9,7 @@
     "install-server": "cd server && npm install",
     "build-client" : "cd client && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "node":" cd server && npm run node",
+    "build-server":" cd server && npm run build",
     "server": "npm run dev server --prefix server --ignore client",
     "client": "npm start client --prefix client",
     "start": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""

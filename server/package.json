@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "node":"node dist/server.js",
+    "build":"npm run tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "tsc -w",
     "dev": "nodemon src/server.ts"
