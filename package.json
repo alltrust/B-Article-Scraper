@@ -6,10 +6,10 @@
   "scripts": {
     "setup-production":"npm run install-client && npm run build-client && npm run install-server",
     "install-client":"cd client && npm install",
-    "install-server": "cd server && npm install && npm run build && npm run node",
+    "install-server": "cd server && npm install && npm run build-server",
     "build-client" : "cd client && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-server":"npm install && npm run build && npm run node",
+    "build-server":" cd server && npm run build && npm run node",
     "server": "npm run dev server --prefix server --ignore client",
     "client": "npm start client --prefix client",
     "start": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
