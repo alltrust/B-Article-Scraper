@@ -48,7 +48,6 @@ const ScrapeForm = () => {
             displayAlert("...Scraping your Urls", "success");
           });
 
-      console.log(validatedUrls);
       validatedUrls.length > 0 &&
         postArticlesFromUrls(validatedUrls, descValue);
     } else {
