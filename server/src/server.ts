@@ -41,7 +41,7 @@ app.get("*", function (request:Request, response:Response) {
 app.use(notFoundMiddlware)
 app.use(errorHandlerMiddleware)
 
-const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority&authSource=admin`;
+const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
 
 
 const startServer = async () => {
