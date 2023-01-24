@@ -44,7 +44,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
     dispatch({ type: "SETUP_START" });
     try {
       const response = await axios.post(
-        `http://localhost:8000/api/v1/user/${endpoint}`,
+        `/api/v1/user/${endpoint}`,
         data
       );
       const { user, token }: UserPayload = response.data;
@@ -174,7 +174,7 @@ export const AppProvider = ({ children }: ChildrenProps) => {
   };
 
   const deleteArticleOrDoc = async (docId: string, articleId?: string) => {
-    //send request to the delete article link and the doc itself
+
     let idString: string =
       articleId !== undefined ? `${docId}/${articleId}` : `${docId}`;
     try {
