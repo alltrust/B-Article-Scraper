@@ -4,12 +4,12 @@
   "description": "Scrape multiple web articles",
   "main": "index.js",
   "scripts": {
-    "setup-production":"npm run install-client && npm run build-client && npm run install-server",
+    "setup-production":"npm run install-client && npm run build-client && npm run install-server && npm run build-server",
     "install-client":"cd client && npm install",
-    "install-server": "cd server && npm install && npm run build",
+    "install-server": "cd server && npm install",
     "build-client" : "cd client && npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build-server":" cd server && npm run build && npm run node",
+    "build-server":" cd server && npm run build",
     "server": "npm run dev server --prefix server --ignore client",
     "client": "npm start client --prefix client",
     "start": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\""
