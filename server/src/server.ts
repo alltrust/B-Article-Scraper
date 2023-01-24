@@ -41,12 +41,13 @@ app.get("*", function (request:Request, response:Response) {
 app.use(notFoundMiddlware)
 app.use(errorHandlerMiddleware)
 
-const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
+// const mongoUrl = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.copgrn2.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`;
 
 
 const startServer = async () => {
   try {
-    await connectDB(mongoUrl);
+    if(process.env.MONGO_URI)
+    await connectDB(process.env.MONGO_URI);
     app.listen(port, () => {
       console.log(`ALIVE FROM port: ${port}`);
     });
